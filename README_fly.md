@@ -1,0 +1,1015 @@
+<div align="center">
+<a href="https://demo.ragflow.io/">
+<img src="web/src/assets/logo-with-text.png" width="350" alt="ragflow logo">
+</a>
+</div>
+
+
+<p align="center">
+    <a href="https://x.com/intent/follow?screen_name=infiniflowai" target="_blank">
+        <img src="https://img.shields.io/twitter/follow/infiniflow?logo=X&color=%20%23f5f5f5" alt="follow on X(Twitter)">
+    </a>
+    <a href="https://demo.ragflow.io" target="_blank">
+        <img alt="Static Badge" src="https://img.shields.io/badge/Online-Demo-4e6b99">
+    </a>
+    <a href="https://hub.docker.com/r/infiniflow/ragflow" target="_blank">
+        <img src="https://img.shields.io/badge/docker_pull-ragflow:v0.17.2-brightgreen" alt="docker pull infiniflow/ragflow:v0.17.2">
+    </a>
+    <a href="https://github.com/infiniflow/ragflow/releases/latest">
+        <img src="https://img.shields.io/github/v/release/infiniflow/ragflow?color=blue&label=Latest%20Release" alt="Latest Release">
+    </a>
+    <a href="https://github.com/infiniflow/ragflow/blob/main/LICENSE">
+        <img height="21" src="https://img.shields.io/badge/License-Apache--2.0-ffffff?labelColor=d4eaf7&color=2e6cc4" alt="license">
+    </a>
+</p>
+
+<h4 align="center">
+  <a href="https://ragflow.io/docs/dev/">Document</a> |
+  <a href="https://github.com/infiniflow/ragflow/issues/4214">Roadmap</a> |
+  <a href="https://twitter.com/infiniflowai">Twitter</a> |
+  <a href="https://discord.gg/zd4qPW6t">Discord</a> |
+  <a href="https://demo.ragflow.io">Demo</a>
+</h4>
+
+## 💡 RAGFlow 是什么？
+
+[RAGFlow](https://ragflow.io/) 是一款基于深度文档理解构建的开源 RAG（Retrieval-Augmented Generation）引擎。RAGFlow 可以为各种规模的企业及个人提供一套精简的 RAG 工作流程，结合大语言模型（LLM）针对用户各类不同的复杂格式数据提供可靠的问答以及有理有据的引用。
+
+
+## 🔥 近期更新
+
+- 2025-02-28 结合互联网搜索（Tavily），对于任意大模型实现类似 Deep Research 的推理功能.
+- 2025-02-05 更新硅基流动的模型列表，增加了对 Deepseek-R1/DeepSeek-V3 的支持。
+- 2025-01-26 优化知识图谱的提取和应用，提供了多种配置选择。
+- 2024-12-18 升级了 DeepDoc 的文档布局分析模型。
+- 2024-12-04 支持知识库的 Pagerank 分数。
+- 2024-11-22 完善了 Agent 中的变量定义和使用。
+- 2024-11-01 对解析后的 chunk 加入关键词抽取和相关问题生成以提高召回的准确度。
+- 2024-08-22 支持用 RAG 技术实现从自然语言到 SQL 语句的转换。
+
+
+## 🌟 主要功能
+
+### 🍭 **"Quality in, quality out"**
+
+- 基于[深度文档理解](./deepdoc/README.md)，能够从各类复杂格式的非结构化数据中提取真知灼见。
+- 真正在无限上下文（token）的场景下快速完成大海捞针测试。
+
+### 🍱 **基于模板的文本切片**
+
+- 不仅仅是智能，更重要的是可控可解释。
+- 多种文本模板可供选择
+
+### 🌱 **有理有据、最大程度降低幻觉（hallucination）**
+
+- 文本切片过程可视化，支持手动调整。
+- 有理有据：答案提供关键引用的快照并支持追根溯源。
+
+### 🍔 **兼容各类异构数据源**
+
+- 支持丰富的文件类型，包括 Word 文档、PPT、excel 表格、txt 文件、图片、PDF、影印件、复印件、结构化数据、网页等。
+
+### 🛀 **全程无忧、自动化的 RAG 工作流**
+
+- 全面优化的 RAG 工作流可以支持从个人应用乃至超大型企业的各类生态系统。
+- 大语言模型 LLM 以及向量模型均支持配置。
+- 基于多路召回、融合重排序。
+- 提供易用的 API，可以轻松集成到各类企业系统。
+
+## 🔎 系统架构
+
+<div align="center" style="margin-top:20px;margin-bottom:20px;">
+<img src="https://github.com/infiniflow/ragflow/assets/12318111/d6ac5664-c237-4200-a7c2-a4a00691b485" width="1000"/>
+</div>
+一个典型的RAG(检索增强生成)系统架构。我将使用Mermaid语法重新绘制这个架构图，并详细解释各个组件和数据流向，帮助RAG初级开发人员快速理解整个系统。
+
+```mermaid
+flowchart TD
+    subgraph "客户端"
+        Q[用户问题] 
+        D[文档上传]
+    end
+
+    subgraph "Web层"
+        NGINX[Web服务器\nNginx]
+    end
+
+    subgraph "API服务层"
+        API[API Server]
+        TD[任务分发\nTask Dispatch]
+        QA[查询分析\nQuery Analyze]
+        MR[多路召回\nMulti-way Recall]
+        RR[重排序\nRe-rank]
+        ANS[答案生成\nAnswer]
+    end
+
+    subgraph "存储层"
+        DB[(向量数据库)]
+    end
+
+    subgraph "模型层"
+        LLM[大语言模型\nLLMs]
+        KE[关键词提取与嵌入\nKeyword & Embedding]
+    end
+
+    subgraph "文档处理"
+        DP[文档解析\nDocument Parser]
+        OCR[光学字符识别\nOCR]
+        DL[文档布局分析\nDocument Layout Analyze]
+        TSR[表格结构识别\nTable Structure Recognition]
+        TE[任务执行器\nTask Executor]
+    end
+
+    %% 数据流向 - 问题处理路径
+    Q -->|提交问题| NGINX
+    NGINX -->|转发问题| API
+    API -->|分析查询| QA
+    QA -->|查询向量化| KE
+    KE -->|检索相关信息| DB
+    DB -->|返回相关文档块| MR
+    MR -->|文档块| RR
+    RR -->|最相关文档| ANS
+    ANS -->|生成回答| LLM
+    LLM -->|返回答案| API
+    API -->|返回结果| NGINX
+    NGINX -->|展示给用户| Q
+
+    %% 数据流向 - 文档处理路径
+    D -->|上传文档| NGINX
+    NGINX -->|转发文档| API
+    API -->|分发任务| TD
+    TD -->|文档处理任务| TE
+    TE -->|文档处理| DP
+    DP -->|需要OCR| OCR
+    DP -->|需要布局分析| DL
+    DP -->|需要表格识别| TSR
+    DP & OCR & DL & TSR -->|处理后文档| KE
+    KE -->|存储向量和文档块| DB
+
+    %% 样式
+    classDef primary fill:#4285F4,stroke:#333,stroke-width:1px,color:white;
+    classDef secondary fill:#34A853,stroke:#333,stroke-width:1px,color:white;
+    classDef tertiary fill:#FBBC05,stroke:#333,stroke-width:1px,color:white;
+    classDef quaternary fill:#EA4335,stroke:#333,stroke-width:1px,color:white;
+    
+    class Q,D,NGINX,API primary;
+    class QA,MR,RR,ANS,TD secondary;
+    class DB,KE,LLM tertiary;
+    class DP,OCR,DL,TSR,TE quaternary;
+```
+
+### 系统组件说明
+
+#### 1. 客户端层
+- **用户问题(Questions)**: 用户输入的查询或问题
+- **文档(Documents)**: 用户上传的文档，可能包含各种格式(PDF、Word、图片等)
+
+#### 2. Web层
+- **Web服务器(Nginx)**: 处理用户请求，负责静态资源分发和请求转发
+
+#### 3. API服务层
+- **API Server**: 系统核心，协调各组件工作
+- **任务分发(Task Dispatch)**: 将文档处理任务分配给相应的处理模块
+- **查询分析(Query Analyze)**: 分析用户查询意图和结构
+- **多路召回(Multi-way Recall)**: 从多个维度和方法检索相关信息
+- **重排序(Re-rank)**: 对召回的结果进行排序，提高相关性
+- **答案生成(Answer)**: 根据检索结果生成最终答案
+
+#### 4. 存储层
+- **向量数据库**: 存储文档的向量表示和原文块，支持高效相似度检索
+
+#### 5. 模型层
+- **大语言模型(LLMs)**: 用于生成自然语言回答
+- **关键词提取与嵌入(Keyword & Embedding)**: 提取文本关键词并生成向量表示
+
+#### 6. 文档处理层
+- **文档解析(Document Parser)**: 解析各种格式的文档
+- **OCR**: 从图像中提取文本
+- **文档布局分析(Document Layout Analyze)**: 理解文档结构
+- **表格结构识别(Table Structure Recognition)**: 识别和解析表格
+- **任务执行器(Task Executor)**: 执行各种文档处理任务
+
+### 数据流向说明
+
+#### 问题处理流程
+1. 用户提交问题
+2. Web服务器接收请求并转发到API服务器
+3. API服务器调用查询分析模块分析问题
+4. 问题经过向量化处理
+5. 系统从向量数据库中检索相关文档块
+6. 通过多路召回获取候选答案材料
+7. 重排序模块对材料进行排序
+8. 答案生成模块结合LLM生成最终答案
+9. 答案返回给用户
+
+#### 文档处理流程
+1. 用户上传文档
+2. 文档通过Web服务器转发到API服务器
+3. API服务器将文档交给任务分发模块
+4. 任务分发模块将处理任务分配给任务执行器
+5. 根据文档类型调用相应处理模块(文档解析、OCR、布局分析、表格识别)
+6. 处理后的文档转为向量表示
+7. 向量和文档块存入数据库，以供后续检索
+
+### 关键环节解析
+
+1. **多路召回机制**: 不同于单一检索方法，多路召回使用多种策略(关键词匹配、语义相似度、知识图谱等)进行检索，提高召回率
+   
+2. **重排序过程**: 对多路召回的结果进行精排，考虑相关性、新鲜度、权威性等多维度因素
+
+3. **向量化与存储**: 文档经过分块、向量化后存储，是高效检索的基础
+
+4. **任务调度与执行**: 不同文档需要不同处理流程，系统通过任务分发和执行器实现灵活配置
+
+5. **文档处理多样性**: 支持多种文档格式，通过不同模块协同处理复杂文档结构
+
+### 技术实现建议
+
+初级开发人员入手该项目时，可以按以下步骤学习：
+
+1. 从简单的文本文档处理开始，理解基本的向量化和检索流程
+2. 学习如何配置和使用向量数据库
+3. 集成基本的LLM模型实现问答功能
+4. 逐步扩展到复杂文档处理和多路召回
+
+## 🎬 项目结构
+
+RAG（Retrieval-Augmented Generation，检索增强生成）是一种结合了检索系统和生成式AI的技术框架。简单来说，它通过以下步骤工作：
+
+1. 将知识库内容预先处理并存储
+2. 当用户提问时，系统先检索相关信息
+3. 将检索到的信息作为上下文与用户问题一起发送给LLM
+4. LLM基于这些上下文生成更准确的回答
+
+下面让我们详细了解本项目如何实现这一流程。
+
+> 对于RAG初级开发者，推荐按以下顺序学习这个项目：
+>
+> 1. 首先了解RAG的基本概念和工作原理
+> 2. 阅读`docs/`下的开发文档和使用指南
+> 3. 熟悉`rag/`模块的核心实现
+> 4. 学习如何通过前端界面操作系统
+> 5. 尝试使用Python SDK与系统交互
+> 6. 进阶学习智能代理和工作流编排
+>
+> 通过这种方式，可以逐步掌握从基础RAG到复杂智能代理的全部技能。
+>
+
+### 一、核心业务模块
+
+#### 1. RAG模块 (rag/)
+
+```
+├─rag                     # RAG检索增强生成的核心实现
+│  ├─app                 # 应用层逻辑，处理用户请求
+│  ├─llm                 # 大语言模型集成（如OpenAI、Claude等）
+│  │  └─[各种模型适配器] # 支持多种LLM模型的适配器
+│  ├─nlp                 # 自然语言处理组件
+│  │  ├─[分词组件]      # 文本分词、向量化等基础NLP功能
+│  │  ├─[语义搜索]      # 实现语义相似度搜索
+│  │  └─[实体识别]      # 命名实体识别等功能
+│  ├─svr                 # 服务层，连接应用与底层功能
+│  │  ├─[检索服务]      # 向量检索、关键词检索等服务
+│  │  └─[排序服务]      # 搜索结果排序优化
+│  ├─res                 # 资源文件（如停用词表等）
+│  └─utils               # 工具函数
+│     ├─[向量计算]      # 向量相似度计算等
+│     ├─[文本处理]      # 文本清洗、格式转换等
+│     └─[缓存管理]      # 检索结果缓存等
+```
+
+**RAG模块是整个系统的核心**，负责将用户的查询与知识库中的相关内容匹配，并通过LLM生成回答。初级开发者应关注：
+
+- `llm/`: 了解如何集成不同的大语言模型
+- `nlp/`: 学习文本如何被处理成向量以便检索
+- `svr/`: 理解检索逻辑的核心实现
+
+#### 2. 智能代理模块 (agent/)
+
+```
+├─agent                   # 智能代理系统
+│  ├─component           # 代理组件库
+│  │  ├─[基础组件]      # 如消息处理、环境交互等组件
+│  │  ├─[工具组件]      # 集成各种外部工具的组件
+│  │  └─[推理组件]      # 处理代理决策推理的组件
+│  ├─templates           # 预定义代理模板
+│  │  ├─[对话模板]      # 通用对话代理模板
+│  │  ├─[研究模板]      # 用于研究任务的代理模板
+│  │  └─[专家模板]      # 领域专家代理模板
+│  └─test                # 测试用例
+│     └─dsl_examples    # 代理DSL语言示例
+```
+
+**智能代理模块**将RAG能力与工具调用、工作流编排能力结合，实现更复杂的自动化任务。初级开发者可以:
+
+- 学习代理如何根据上下文做出决策
+- 了解不同类型的代理模板适用场景
+- 通过DSL示例学习如何编写自定义代理
+
+#### 3. API服务模块 (api/)
+
+```
+├─api                     # API服务层
+│  ├─apps                # 应用服务集合
+│  │  └─sdk             # SDK相关API服务
+│  ├─db                  # 数据库访问层
+│  │  └─services        # 数据库服务
+│  │     ├─[用户服务]   # 用户认证、权限管理
+│  │     ├─[知识库服务] # 知识库CRUD操作
+│  │     └─[会话服务]   # 对话历史管理
+│  └─utils               # API工具函数
+│     ├─[请求验证]      # 请求参数验证
+│     ├─[响应格式化]    # 统一响应格式
+│     └─[错误处理]      # 全局错误处理
+```
+
+**API模块**是连接前端与后端核心功能的桥梁，提供RESTful接口供前端调用。初级开发者应关注：
+
+- 如何定义API接口
+- 数据库服务如何组织
+- 用户认证与权限控制的实现
+
+#### 4. 文档处理模块 (deepdoc/)
+
+```
+├─deepdoc                 # 文档智能处理模块
+│  ├─parser              # 文档解析器
+│  │  └─resume          # 简历解析专用功能
+│  │     ├─entities     # 简历实体识别
+│  │     │  └─res      # 资源文件
+│  │     ├─[教育背景]   # 教育经历提取
+│  │     ├─[工作经验]   # 工作经验提取
+│  │     └─[技能识别]   # 技能提取
+│  └─vision              # 计算机视觉处理
+│     ├─[OCR功能]       # 图像文字识别
+│     ├─[图表识别]      # 图表数据提取
+│     └─[布局分析]      # 文档布局结构分析
+```
+
+**文档处理模块**负责从各种文档中提取结构化信息，是知识库建设的基础。初级开发者可以学习：
+
+- 如何从非结构化文档中提取信息
+- 特定领域（如简历）的解析逻辑
+- 视觉信息处理的基本流程
+
+#### 5. 图形化RAG模块 (graphrag/)
+
+```
+├─graphrag                # 图形化RAG实现
+│  ├─general             # 通用图RAG实现
+│  │  ├─[图构建]        # 知识图谱构建
+│  │  ├─[图存储]        # 图数据库接口
+│  │  └─[图检索]        # 图结构检索算法
+│  └─light               # 轻量级图RAG实现
+│     ├─[内存图]        # 内存中的图结构
+│     ├─[简化检索]      # 简化版图检索
+│     └─[可视化]        # 图结构可视化
+```
+
+**图形化RAG模块**将传统RAG与图结构结合，支持更复杂的知识推理。这对初级开发者来说可能较为复杂，但可以了解：
+
+- 知识图谱的基本概念
+- 图结构如何增强传统RAG的检索能力
+- 轻量级实现与完整实现的区别
+
+### 二、前端模块 (web/)
+
+#### 1. 前端结构
+
+> - 基于 React + TypeScript 开发
+> - 使用 UmiJS 框架构建
+> - 采用 Tailwind CSS 进行样式管理
+> - 支持国际化（i18n）
+> - 包含完整的组件库和工具函数
+> - 提供主题定制能力
+
+```
+web/
+├── src/              # 源代码
+│   ├── assets/       # 静态资源
+│   ├── components/   # 通用组件
+│   ├── constants/    # 常量定义
+│   ├── hooks/        # React Hooks
+│   ├── icons/        # 图标资源
+│   ├── interfaces/   # TypeScript 接口定义
+│   ├── layouts/      # 页面布局
+│   ├── lib/          # 工具库
+│   ├── locales/      # 国际化资源
+│   ├── pages/        # 页面组件
+│   ├── services/     # API 服务
+│   ├── theme/        # 主题相关
+│   ├── utils/        # 工具函数
+│   ├── wrappers/     # 组件包装器
+│   ├── app.tsx       # 应用入口
+│   └── routes.ts     # 路由配置
+├── public/           # 静态资源
+├── .umirc.ts         # UmiJS 配置
+├── package.json      # 项目依赖
+├── tailwind.config.js # Tailwind CSS 配置
+└── tsconfig.json     # TypeScript 配置
+```
+
+#### 2. 页面组件
+
+```
+└─web
+    └─src
+        ├─pages               # 页面组件
+        │  ├─add-knowledge    # 知识库管理页面
+        │  │  └─components    # 知识库相关组件
+        │  │     ├─knowledge-chunk      # 知识块管理
+        │  │     ├─knowledge-dataset    # 数据集管理
+        │  │     ├─knowledge-file       # 文件管理
+        │  │     ├─knowledge-graph      # 知识图谱
+        │  │     ├─knowledge-setting    # 知识库设置
+        │  │     ├─knowledge-sidebar    # 侧边栏
+        │  │     └─knowledge-testing    # 知识库测试
+        │  │
+        │  ├─agent           # 智能代理页面
+        │  │  ├─canvas       # 代理可视化画布
+        │  │  ├─debug-content # 调试面板
+        │  │  ├─form         # 代理表单配置
+        │  │  └─form-sheet   # 表单编辑器
+        │  │
+        │  ├─chat            # 聊天功能页面
+        │  │  ├─chat-container        # 聊天界面
+        │  │  ├─chat-configuration-modal # 聊天配置
+        │  │  └─markdown-content     # Markdown渲染
+        │  │
+        │  ├─dataset         # 数据集管理页面
+        │  ├─file-manager    # 文件管理页面
+        │  └─flow            # 工作流页面
+        │     ├─canvas       # 工作流画布
+        │     ├─form         # 节点表单
+        │     └─list         # 工作流列表
+```
+
+**前端页面模块**实现了系统的用户界面，开发者可以重点关注：
+
+- `add-knowledge/`: 学习知识库构建的前端流程
+- `chat/`: 了解聊天界面如何与后端RAG交互
+- `agent/`和`flow/`: 学习如何可视化编排智能工作流
+
+#### 3. 通用组件
+
+```
+└─web
+    └─src
+        ├─components           # 通用组件
+        │  ├─api-service      # API服务组件
+        │  │  ├─chat-api-key-modal  # API密钥设置
+        │  │  └─embed-modal        # 嵌入设置
+        │  │
+        │  ├─file-upload      # 文件上传组件
+        │  ├─message-input    # 消息输入组件
+        │  ├─message-item     # 消息展示组件
+        │  ├─pdf-previewer    # PDF预览组件
+        │  ├─prompt-editor    # 提示词编辑器
+        │  ├─retrieval-documents # 检索文档展示
+        │  └─ui               # 基础UI组件
+```
+
+**通用组件**封装了可复用的UI元素，初级开发者可以学习：
+
+- `prompt-editor/`: 提示词编辑的最佳实践
+- `retrieval-documents/`: 检索结果的展示方式
+- `message-input/`和`message-item/`: 聊天界面的核心组件
+
+#### 4. 服务与工具
+
+```
+└─web
+    └─src
+        ├─services            # 前端服务层
+        │  ├─[API服务]       # 后端API调用封装
+        │  ├─[状态管理]      # 全局状态管理
+        │  └─[WebSocket]     # 实时通信服务
+        │
+        ├─utils              # 前端工具函数
+        │  ├─[格式转换]      # 数据格式转换
+        │  ├─[验证工具]      # 表单验证
+        │  └─[帮助函数]      # 通用帮助函数
+```
+
+**服务与工具**为前端提供基础能力，初级开发者应了解：
+
+- 前端如何调用后端API
+- 实时通信如何实现
+- 前端状态管理的基本模式
+
+### 三、SDK与集成模块
+
+#### 1. Python SDK
+
+```
+├─sdk                     # SDK模块
+│  └─python              # Python SDK
+│      ├─ragflow_sdk     # SDK核心实现
+│      │  └─modules      # 功能模块
+│      │     ├─[知识库管理] # 知识库操作API
+│      │     ├─[代理操作]  # 代理调用API
+│      │     └─[对话接口]  # 聊天功能API
+│      │
+│      └─test            # 测试用例
+│          ├─test_frontend_api   # 前端API测试
+│          ├─test_http_api       # HTTP API测试
+│          └─test_sdk_api        # SDK API测试
+```
+
+**Python SDK**提供了编程方式访问系统功能的能力，初级开发者可以：
+
+- 学习如何通过SDK与系统交互
+- 了解API设计的最佳实践
+- 通过测试用例学习功能使用方法
+
+#### 2. 第三方集成
+
+```
+├─intergrations          # 第三方集成
+│  ├─chatgpt-on-wechat  # 微信集成
+│  │  └─plugins         # 微信插件
+│  │     ├─[对话插件]   # 处理对话消息
+│  │     └─[命令插件]   # 处理命令消息
+│  │
+│  └─extension_chrome    # Chrome扩展
+│      ├─assets         # 静态资源
+│      ├─icons          # 图标文件
+│      └─styles         # 样式文件
+```
+
+**第三方集成**将系统能力扩展到其他平台，初级开发者可以了解：
+
+- 如何将RAG能力集成到微信等社交平台
+- 浏览器扩展如何与系统交互
+- 多平台集成的技术选型
+
+### 四、部署与配置
+
+#### 1. Docker与Kubernetes配置
+
+```
+├─docker                  # Docker配置
+│  └─nginx               # Nginx配置
+│     ├─[配置文件]      # Nginx服务器配置
+│     └─[SSL证书]       # HTTPS证书配置
+│
+├─helm                    # Kubernetes部署
+│  └─templates           # Helm模板
+│     ├─[部署配置]      # 部署描述文件
+│     ├─[服务配置]      # 服务描述文件
+│     └─tests           # 测试配置
+```
+
+**部署与配置**部分负责系统的容器化与云部署，初级开发者可以学习：
+
+- Docker容器化的基本概念
+- Kubernetes部署的配置方法
+- 微服务架构的部署策略
+
+#### 2. 文档与配置
+
+```
+├─conf                    # 配置文件
+│  ├─[系统配置]         # 全局系统配置
+│  ├─[模型配置]         # LLM模型配置
+│  └─[服务配置]         # 各服务配置
+│
+├─docs                    # 文档
+│  ├─develop             # 开发文档
+│  │  ├─[架构设计]      # 系统架构说明
+│  │  ├─[API文档]       # API接口说明
+│  │  └─[部署指南]      # 部署步骤说明
+│  │
+│  ├─guides              # 使用指南
+│  │  ├─agent           # 代理使用指南
+│  │  ├─chat            # 聊天功能指南
+│  │  └─dataset         # 数据集管理指南
+│  │
+│  └─references          # 参考资料
+│     ├─[概念解释]      # 核心概念说明
+│     └─[最佳实践]      # 推荐实践方法
+```
+
+**文档与配置**是学习系统的重要资源，初级开发者应该：
+
+- 通过开发文档了解系统架构与设计理念
+- 通过使用指南学习各功能模块的使用方法
+- 参考配置文件学习系统的配置选项
+
+#### 其他文件
+
+- `pyproject.toml`: Python 项目配置和依赖管理
+- `Dockerfile`: 主 Docker 构建文件
+- `Dockerfile.deps`: 依赖构建文件
+- `download_deps.py`: 依赖下载脚本
+- `show_env.sh`: 环境变量显示脚本
+- `SECURITY.md`: 安全策略文档
+- `LICENSE`: 开源许可证
+- `CONTRIBUTING.md`: 贡献指南
+
+## **🏄** 快速开始
+
+### 📝 前提条件
+
+- CPU >= 4 核
+- RAM >= 16 GB
+- Disk >= 50 GB
+- Docker >= 24.0.0 & Docker Compose >= v2.26.1
+  > 如果你并没有在本机安装 Docker（Windows、Mac，或者 Linux）, 可以参考文档 [Install Docker Engine](https://docs.docker.com/engine/install/) 自行安装。
+
+### 🚀 启动服务器
+
+1. 确保 `vm.max_map_count` 不小于 262144：
+
+   > - **`max_map_count`**:  这是一个内核参数，用于限制一个进程可以拥有的 **内存映射区域 (memory map areas)** 的最大数量。
+   >
+   > **什么是内存映射区域？**
+   >
+   > 内存映射是一种将文件或设备的内容直接映射到进程的虚拟地址空间的技术。这使得进程可以像访问内存一样访问文件或设备的内容，而无需进行显式的读写操作。
+
+   > 如需确认 `vm.max_map_count` 的大小：
+   >
+   > ```bash
+   > $ sysctl vm.max_map_count
+   > ```
+   >
+   > 如果 `vm.max_map_count` 的值小于 262144，可以进行重置：
+   >
+   > ```bash
+   > # 这里我们设为 262144:
+   > $ sudo sysctl -w vm.max_map_count=262144
+   > ```
+   >
+   > 你的改动会在下次系统重启时被重置。如果希望做永久改动，还需要在 **/etc/sysctl.conf** 文件里把 `vm.max_map_count` 的值再相应更新一遍：
+   >
+   > ```bash
+   > vm.max_map_count=262144
+   > ```
+
+2. 克隆仓库：
+
+   ```bash
+   $ git clone https://github.com/infiniflow/ragflow.git
+   ```
+
+3. 进入 **docker** 文件夹，利用提前编译好的 Docker 镜像启动服务器：
+
+   > 运行以下命令会自动下载 RAGFlow slim Docker 镜像 `v0.17.2-slim`。请参考下表查看不同 Docker 发行版的描述。如需下载不同于 `v0.17.2-slim` 的 Docker 镜像，请在运行 `docker compose` 启动服务之前先更新 **docker/.env** 文件内的 `RAGFLOW_IMAGE` 变量。比如，你可以通过设置 `RAGFLOW_IMAGE=infiniflow/ragflow:v0.17.2` 来下载 RAGFlow 镜像的 `v0.17.2` 完整发行版。
+
+   ```bash
+   $ cd ragflow/docker
+   # Use CPU for embedding and DeepDoc tasks:
+   $ docker compose -f docker-compose.yml up -d
+
+   # To use GPU to accelerate embedding and DeepDoc tasks:
+   # docker compose -f docker-compose-gpu.yml up -d
+   ```
+
+   | RAGFlow image tag | Image size (GB) | Has embedding models? | Stable?                  |
+   | ----------------- | --------------- | --------------------- | ------------------------ |
+   | v0.17.2           | &approx;9       | :heavy_check_mark:    | Stable release           |
+   | v0.17.2-slim      | &approx;2       | ❌                    | Stable release           |
+   | nightly           | &approx;9       | :heavy_check_mark:    | _Unstable_ nightly build |
+   | nightly-slim      | &approx;2       | ❌                     | _Unstable_ nightly build |
+
+   > [!TIP]
+   > 如果你遇到 Docker 镜像拉不下来的问题，可以在 **docker/.env** 文件内根据变量 `RAGFLOW_IMAGE` 的注释提示选择华为云或者阿里云的相应镜像。
+   >
+   > - 华为云镜像名：`swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow`
+   > - 阿里云镜像名：`registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow`
+
+4. 服务器启动成功后再次确认服务器状态：
+
+   ```bash
+   $ docker logs -f ragflow-server
+   ```
+
+   _出现以下界面提示说明服务器启动成功：_
+
+   ```bash
+        ____   ___    ______ ______ __
+       / __ \ /   |  / ____// ____// /____  _      __
+      / /_/ // /| | / / __ / /_   / // __ \| | /| / /
+     / _, _// ___ |/ /_/ // __/  / // /_/ /| |/ |/ /
+    /_/ |_|/_/  |_|\____//_/    /_/ \____/ |__/|__/
+
+    * Running on all addresses (0.0.0.0)
+   ```
+
+   > 如果您在没有看到上面的提示信息出来之前，就尝试登录 RAGFlow，你的浏览器有可能会提示 `network anormal` 或 `网络异常`。
+
+5. 在你的浏览器中输入你的服务器对应的 IP 地址并登录 RAGFlow。
+   > 上面这个例子中，您只需输入 http://IP_OF_YOUR_MACHINE 即可：未改动过配置则无需输入端口（默认的 HTTP 服务端口 80）。
+6. 在 [service_conf.yaml.template](./docker/service_conf.yaml.template) 文件的 `user_default_llm` 栏配置 LLM factory，并在 `API_KEY` 栏填写和你选择的大模型相对应的 API key。
+
+   > 详见 [llm_api_key_setup](https://ragflow.io/docs/dev/llm_api_key_setup)。
+
+   _好戏开始，接着奏乐接着舞！_
+
+## 🔧 系统配置
+
+系统配置涉及以下三份文件：
+
+- [./docker/.env](./docker/.env)：存放一些基本的系统环境变量，比如 `SVR_HTTP_PORT`、`MYSQL_PASSWORD`、`MINIO_PASSWORD` 等。
+- [service_conf.yaml.template](./docker/service_conf.yaml.template)：配置各类后台服务。
+- [docker-compose.yml](./docker/docker-compose.yml): 系统依赖该文件完成启动。
+
+请务必确保 [./docker/.env](./docker/.env) 文件中的变量设置与 [service_conf.yaml.template](./docker/service_conf.yaml.template) 文件中的配置保持一致！
+
+如果不能访问镜像站点 hub.docker.com 或者模型站点 huggingface.co，请按照 [./docker/.env](./docker/.env) 注释修改 `RAGFLOW_IMAGE` 和 `HF_ENDPOINT`。
+
+> [./docker/README](./docker/README.md) 解释了 [service_conf.yaml.template](./docker/service_conf.yaml.template) 用到的环境变量设置和服务配置。
+
+如需更新默认的 HTTP 服务端口(80), 可以在 [docker-compose.yml](./docker/docker-compose.yml) 文件中将配置 `80:80` 改为 `<YOUR_SERVING_PORT>:80`。
+
+> 所有系统配置都需要通过系统重启生效：
+>
+> ```bash
+> $ docker compose -f docker-compose.yml up -d
+> ```
+
+### 把文档引擎从 Elasticsearch 切换成为 Infinity
+
+RAGFlow 默认使用 Elasticsearch 存储文本和向量数据. 如果要切换为 [Infinity](https://github.com/infiniflow/infinity/), 可以按照下面步骤进行:
+
+1. 停止所有容器运行:
+
+   ```bash
+   $ docker compose -f docker/docker-compose.yml down -v
+   ```
+   Note: `-v` 将会删除 docker 容器的 volumes，已有的数据会被清空。
+
+2. 设置 **docker/.env** 目录中的 `DOC_ENGINE` 为 `infinity`.
+
+3. 启动容器:
+
+   ```bash
+   $ docker compose -f docker-compose.yml up -d
+   ```
+
+> [!WARNING]
+> Infinity 目前官方并未正式支持在 Linux/arm64 架构下的机器上运行.
+
+## 🔧 源码编译 Docker 镜像（不含 embedding 模型）
+
+本 Docker 镜像大小约 2 GB 左右并且依赖外部的大模型和 embedding 服务。
+
+```bash
+git clone https://github.com/infiniflow/ragflow.git
+cd ragflow/
+docker build --build-arg LIGHTEN=1 --build-arg NEED_MIRROR=1 -f Dockerfile -t infiniflow/ragflow:nightly-slim .
+```
+
+## 🔧 源码编译 Docker 镜像（包含 embedding 模型）
+
+本 Docker 大小约 9 GB 左右。由于已包含 embedding 模型，所以只需依赖外部的大模型服务即可。
+
+```bash
+git clone https://github.com/infiniflow/ragflow.git
+cd ragflow/
+docker build --build-arg NEED_MIRROR=1 -f Dockerfile -t infiniflow/ragflow:nightly .
+```
+
+## 🔨 以源代码启动服务
+
+本项目使用 Python v3.10 开发
+
+- Python 环境管理 [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/)
+
+#### 1. 安装 Miniconda
+
+```shell
+mkdir -p ~/miniconda3
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+rm -rf ~/miniconda3/miniconda.sh
+```
+
+安装完成后，建议新建一个 Python 虚拟环境，命名为 `langchain`。
+
+```shell
+conda create -n ragflow python=3.10
+
+# 激活环境
+conda activate ragflow 
+```
+
+#### 3. 配置 OpenAI API Key
+
+根据你使用的命令行工具，在 `~/.bashrc` 或 `~/.zshrc` 中配置 `OPENAI_API_KEY` 环境变量：
+
+```shell
+export OPENAI_API_KEY="xxxx"
+export DEEPSEEK_API_KEY="xxxx"
+```
+
+#### 4. 启动后端
+
+1. 安装 uv。如已经安装，可跳过本步骤：
+
+   ```bash
+   pip install pipx
+   pipx install uv
+   export UV_INDEX=https://mirrors.aliyun.com/pypi/simple
+   # window环境
+   set UV_INDEX=https://mirrors.aliyun.com/pypi/simple
+   ```
+
+   > - **`pip` 用于安装 Python 库，这些库是构建其他 Python 项目的基础。** 你通常会在项目特定的虚拟环境中使用 `pip`。
+   > - **`pipx` 用于安装 Python 应用程序，这些应用程序是你可以直接在命令行运行的独立工具。** `pipx` 会确保每个应用程序都在其自己的隔离环境中运行。
+   > - `conda` 和 `pipx` 可以很好地协同工作。`conda` 用于管理项目级别的环境和依赖，而 `pipx` 可以用于在这些环境中安全地安装和运行独立的 Python 应用程序。
+
+   ```bash
+   # uv命令生效
+   pipx ensurepath
+   ```
+
+   
+
+2. 下载源代码并安装 Python 依赖：
+
+   ```bash
+   git clone https://github.com/infiniflow/ragflow.git
+   cd ragflow/
+   uv sync --python 3.10 --all-extras # install RAGFlow dependent python modules
+   ```
+
+3. 通过 Docker Compose 启动依赖的服务（MinIO, Elasticsearch, Redis, and MySQL）：
+
+   ```bash
+   docker compose -f docker/docker-compose-base.yml up -d
+   ```
+
+   在 `/etc/hosts` 中添加以下代码，将 **conf/service_conf.yaml** 文件中的所有 host 地址都解析为 `127.0.0.1`：
+
+   ```
+   127.0.0.1       es01 infinity mysql minio redis
+   ```
+
+4. 如果无法访问 HuggingFace，可以把环境变量 `HF_ENDPOINT` 设成相应的镜像站点：
+
+   ```bash
+   export HF_ENDPOINT=https://hf-mirror.com
+   ```
+
+5. 启动后端服务：
+
+   ```bash
+   source .venv/bin/activate
+   export PYTHONPATH=$(pwd)
+   bash docker/launch_backend_service.sh
+   ```
+
+6. 安装前端依赖：
+   ```bash
+   cd web
+   npm install
+   ```
+
+7. 启动前端服务：
+
+   ```bash
+   npm run dev
+   ```
+
+   _以下界面说明系统已经成功启动：_
+
+   ![](https://github.com/user-attachments/assets/0daf462c-a24d-4496-a66f-92533534e187)
+
+## 常见问题
+
+### uv sync 
+
+```bash
+uv sync --python 3.10 --all-extras
+Using CPython 3.10.16 interpreter at: /root/miniconda3/envs/ragflow/bin/python3.10
+Creating virtual environment at: .venv
+Resolved 380 packages in 1ms
+  × Failed to build `pyicu==2.15`
+  ├─▶ The build backend returned an error
+  ╰─▶ Call to `setuptools.build_meta.build_wheel` failed (exit status: 1)
+
+      [stdout]
+      (running 'icu-config --version')
+      (running 'pkg-config --modversion icu-i18n')
+
+      [stderr]
+      Traceback (most recent call last):
+        File "<string>", line 89, in <module>
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/os.py", line 680, in __getitem__
+          raise KeyError(key) from None
+      KeyError: 'ICU_VERSION'
+
+      During handling of the above exception, another exception occurred:
+
+      Traceback (most recent call last):
+        File "<string>", line 92, in <module>
+        File "<string>", line 19, in check_output
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 421, in check_output
+          return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 503, in run
+          with Popen(*popenargs, **kwargs) as process:
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 971, in __init__
+          self._execute_child(args, executable, preexec_fn, close_fds,
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 1863, in _execute_child
+          raise child_exception_type(errno_num, err_msg, err_filename)
+      FileNotFoundError: [Errno 2] No such file or directory: 'icu-config'
+
+      During handling of the above exception, another exception occurred:
+
+      Traceback (most recent call last):
+        File "<string>", line 96, in <module>
+        File "<string>", line 19, in check_output
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 421, in check_output
+          return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 503, in run
+          with Popen(*popenargs, **kwargs) as process:
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 971, in __init__
+          self._execute_child(args, executable, preexec_fn, close_fds,
+        File "/root/miniconda3/envs/ragflow/lib/python3.10/subprocess.py", line 1863, in _execute_child
+          raise child_exception_type(errno_num, err_msg, err_filename)
+      FileNotFoundError: [Errno 2] No such file or directory: 'pkg-config'
+
+      During handling of the above exception, another exception occurred:
+
+      Traceback (most recent call last):
+        File "<string>", line 14, in <module>
+        File "/root/.cache/uv/builds-v0/.tmpE66vpR/lib/python3.10/site-packages/setuptools/build_meta.py", line 334, in get_requires_for_build_wheel
+          return self._get_build_requires(config_settings, requirements=[])
+        File "/root/.cache/uv/builds-v0/.tmpE66vpR/lib/python3.10/site-packages/setuptools/build_meta.py", line 304, in _get_build_requires
+          self.run_setup()
+        File "/root/.cache/uv/builds-v0/.tmpE66vpR/lib/python3.10/site-packages/setuptools/build_meta.py", line 320, in run_setup
+          exec(code, locals())
+        File "<string>", line 99, in <module>
+      RuntimeError:
+      Please install pkg-config on your system or set the ICU_VERSION environment
+      variable to the version of ICU you have installed.
+      
+
+      hint: This usually indicates a problem with the package or the build environment.
+  help: `pyicu` (v2.15) was included because `ragflow` (v0.17.2) depends on `pyicu`
+```
+
+你看到的错误信息表明在安装 `ragflow` 的过程中，其依赖项 `pyicu` 的构建失败了。错误原因是构建 `pyicu` 时找不到 `icu-config` 和 `pkg-config` 这两个工具。错误信息也提示你可以设置 `ICU_VERSION` 环境变量作为替代方案。
+
+这通常意味着你的系统中缺少构建 `pyicu` 所需的系统库和开发工具。你需要安装 Unicode 国际化组件 (ICU) 库和 `pkg-config` 到你的系统中。
+
+以下是如何解决这个问题的方法，具体取决于你的操作系统：
+
+**Windows系统**
+
+解决方法：点击https://www.lfd.uci.edu/~gohlke/pythonlibs/下载Unofficial Windows Binaries for Python Extension Packages。
+
+> 注意：选择对应自己Python和OS版本的包名。如 *pyICU‑2.1‑cp36‑cp36m‑winamd64.whl* 文件名中 *cp36* 表示 Python3.6, *win_amd64* 表示 Windows-64bit。
+
+下载完成后在cmd中执行 pip install <.whl的绝对路径>，如
+
+```
+pip install D:\Desktop\pyicu-2.15-cp310-cp310-win_amd64.whl
+```
+
+**Ubuntu 的系统**
+
+1. 更新你的软件包列表：
+
+   ```Bash
+   sudo apt update
+   ```
+
+2. 安装 ICU 开发库和 pkg-config：
+
+   ```Bash
+   sudo apt install libicu-dev pkg-config
+   ```
+
+在安装 `libicu-dev` 和 `pkg-config` 后，你可以使用以下命令来查看版本：
+
+- **`libicu-dev` 包版本:** `dpkg -s libicu-dev | grep Version` 或 `apt-cache policy libicu-dev`
+- **ICU 库版本:** `icu-config --version`
+- **`pkg-config` 版本:** `pkg-config --versionb`
+
+```bash
+(ragflow) root@fly:~# dpkg -s libicu-dev | grep Version
+Version: 70.1-2
+(ragflow) root@fly:~# pkg-config --version
+0.29.2
+```
+
+**安装必要的软件包后，再次尝试安装 `ragflow`：**
+
+```
+git clone https://github.com/infiniflow/ragflow.git
+cd ragflow
+uv sync --python 3.10 --all-extras
+```
+
+## 📚 技术文档
+
+- [Quickstart](https://ragflow.io/docs/dev/)
+- [Configuration](https://ragflow.io/docs/dev/configurations)
+- [Release notes](https://ragflow.io/docs/dev/release_notes)
+- [User guides](https://ragflow.io/docs/dev/category/guides)
+- [Developer guides](https://ragflow.io/docs/dev/category/developers)
+- [References](https://ragflow.io/docs/dev/category/references)
+- [FAQs](https://ragflow.io/docs/dev/faq)
+
