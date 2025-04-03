@@ -803,7 +803,7 @@ web/
 
    ![](https://github.com/user-attachments/assets/0daf462c-a24d-4496-a66f-92533534e187)
 
-## 常见问题
+## 部署常见问题
 
 ### 后端服务报错
 
@@ -1383,7 +1383,9 @@ event - [Webpack] Compiled in 617 ms (1464 modules)
 
 ```
 
+## 代码调试
 
+https://fancyerii.github.io/2023/09/25/py-remote-debug/
 
 ## 📚 技术文档
 
@@ -1395,3 +1397,6 @@ event - [Webpack] Compiled in 617 ms (1464 modules)
 - [References](https://ragflow.io/docs/dev/category/references)
 - [FAQs](https://ragflow.io/docs/dev/faq)
 
+## 参考
+
+1. 千问模型：https://bailian.console.aliyun.com/?apiKey=1#/api-key
