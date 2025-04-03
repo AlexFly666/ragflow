@@ -728,48 +728,6 @@ web/
 > $ docker compose -f docker-compose.yml up -d
 > ```
 
-### 把文档引擎从 Elasticsearch 切换成为 Infinity
-
-RAGFlow 默认使用 Elasticsearch 存储文本和向量数据. 如果要切换为 [Infinity](https://github.com/infiniflow/infinity/), 可以按照下面步骤进行:
-
-1. 停止所有容器运行:
-
-   ```bash
-   $ docker compose -f docker/docker-compose.yml down -v
-   ```
-   Note: `-v` 将会删除 docker 容器的 volumes，已有的数据会被清空。
-
-2. 设置 **docker/.env** 目录中的 `DOC_ENGINE` 为 `infinity`.
-
-3. 启动容器:
-
-   ```bash
-   $ docker compose -f docker-compose.yml up -d
-   ```
-
-> [!WARNING]
-> Infinity 目前官方并未正式支持在 Linux/arm64 架构下的机器上运行.
-
-## 🔧 源码编译 Docker 镜像（不含 embedding 模型）
-
-本 Docker 镜像大小约 2 GB 左右并且依赖外部的大模型和 embedding 服务。
-
-```bash
-git clone https://github.com/infiniflow/ragflow.git
-cd ragflow/
-docker build --build-arg LIGHTEN=1 --build-arg NEED_MIRROR=1 -f Dockerfile -t infiniflow/ragflow:nightly-slim .
-```
-
-## 🔧 源码编译 Docker 镜像（包含 embedding 模型）
-
-本 Docker 大小约 9 GB 左右。由于已包含 embedding 模型，所以只需依赖外部的大模型服务即可。
-
-```bash
-git clone https://github.com/infiniflow/ragflow.git
-cd ragflow/
-docker build --build-arg NEED_MIRROR=1 -f Dockerfile -t infiniflow/ragflow:nightly .
-```
-
 ## 🔨 以源代码启动服务
 
 ### 启动后端
@@ -802,7 +760,7 @@ docker build --build-arg NEED_MIRROR=1 -f Dockerfile -t infiniflow/ragflow:night
 3. 通过 Docker Compose 启动依赖的服务（MinIO, Elasticsearch, Redis, and MySQL）：
 
    ```bash
-   docker compose -f docker/docker-compose-base.yml up -d
+   docker-compose -f docker/docker-compose-base.yml up -d --force-recreate
    ```
 
    在 `/etc/hosts` 中添加以下代码，将 **conf/service_conf.yaml** 文件中的所有 host 地址都解析为 `127.0.0.1`：
@@ -1037,6 +995,147 @@ sudo apt-get update
 sudo apt-get install jemalloc
 ```
 
+#### ImportError: libGL.so.1: cannot open shared object file: No such file or directory
+
+```bash
+bash docker/launch_backend_service.sh
+Loading environment variables from: /root/ragflow/docker/.env
+Starting task_executor.py for task 0 (Attempt 1)
+Starting ragflow_server.py (Attempt 1)
+2025-04-03 16:31:09,502 INFO     699638 ragflow_server log path: /root/ragflow/logs/ragflow_server.log, log levels: {'peewee': 'WARNING', 'pdfminer': 'WARNING', 'root': 'INFO'}
+2025-04-03 16:31:12,082 INFO     699638 found 0 gpus
+2025-04-03 16:31:17,856 INFO     699638 init database on cluster mode successfully
+Traceback (most recent call last):
+  File "/root/ragflow/api/ragflow_server.py", line 36, in <module>
+    from api.apps import app
+  File "/root/ragflow/api/apps/__init__.py", line 137, in <module>
+    client_urls_prefix = [
+  File "/root/ragflow/api/apps/__init__.py", line 138, in <listcomp>
+    register_page(path) for dir in pages_dir for path in search_pages_path(dir)
+  File "/root/ragflow/api/apps/__init__.py", line 120, in register_page
+    spec.loader.exec_module(page)
+  File "/root/ragflow/api/apps/chunk_app.py", line 22, in <module>
+    from rag.app.qa import rmPrefix, beAdoc
+  File "/root/ragflow/rag/app/qa.py", line 25, in <module>
+    from deepdoc.parser.utils import get_text
+  File "/root/ragflow/deepdoc/parser/__init__.py", line 17, in <module>
+    from .pdf_parser import RAGFlowPdfParser as PdfParser, PlainParser
+  File "/root/ragflow/deepdoc/parser/pdf_parser.py", line 37, in <module>
+    from deepdoc.vision import OCR, LayoutRecognizer, Recognizer, TableStructureRecognizer
+  File "/root/ragflow/deepdoc/vision/__init__.py", line 21, in <module>
+    from .ocr import OCR
+  File "/root/ragflow/deepdoc/vision/ocr.py", line 26, in <module>
+    from .operators import *  # noqa: F403
+  File "/root/ragflow/deepdoc/vision/operators.py", line 20, in <module>
+    import cv2
+  File "/root/ragflow/.venv/lib/python3.10/site-packages/cv2/__init__.py", line 181, in <module>
+    bootstrap()
+  File "/root/ragflow/.venv/lib/python3.10/site-packages/cv2/__init__.py", line 153, in bootstrap
+    native_module = importlib.import_module("cv2")
+  File "/usr/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+ImportError: libGL.so.1: cannot open shared object file: No such file or directory
+Traceback (most recent call last):
+  File "/root/ragflow/rag/svr/task_executor.py", line 50, in <module>
+    from api.db.services.task_service import TaskService
+  File "/root/ragflow/api/db/services/task_service.py", line 22, in <module>
+    from deepdoc.parser import PdfParser
+  File "/root/ragflow/deepdoc/parser/__init__.py", line 17, in <module>
+    from .pdf_parser import RAGFlowPdfParser as PdfParser, PlainParser
+  File "/root/ragflow/deepdoc/parser/pdf_parser.py", line 37, in <module>
+    from deepdoc.vision import OCR, LayoutRecognizer, Recognizer, TableStructureRecognizer
+  File "/root/ragflow/deepdoc/vision/__init__.py", line 21, in <module>
+    from .ocr import OCR
+  File "/root/ragflow/deepdoc/vision/ocr.py", line 26, in <module>
+    from .operators import *  # noqa: F403
+  File "/root/ragflow/deepdoc/vision/operators.py", line 20, in <module>
+    import cv2
+  File "/root/ragflow/.venv/lib/python3.10/site-packages/cv2/__init__.py", line 181, in <module>
+    bootstrap()
+  File "/root/ragflow/.venv/lib/python3.10/site-packages/cv2/__init__.py", line 153, in bootstrap
+    native_module = importlib.import_module("cv2")
+  File "/usr/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+ImportError: libGL.so.1: cannot open shared object file: No such file or directory
+
+```
+
+这个错误是因为系统中缺少 OpenCV (cv2) 所需的系统库 libGL.so.1。这是一个常见的依赖问题，特别是在 Docker 容器中运行 OpenCV 时。让我帮您解决这个问题。
+
+我们需要安装必要的系统依赖。我将创建一个命令来安装所需的包：
+
+```bash
+apt-get update && apt-get install -y libgl1-mesa-glx
+```
+
+##### ImportError: libodbc.so.2: cannot open shared object file: No such file or directory
+
+```bash
+bash docker/launch_backend_service.sh
+Loading environment variables from: /root/ragflow/docker/.env
+Starting ragflow_server.py (Attempt 1)
+Starting task_executor.py for task 0 (Attempt 1)
+2025-04-03 17:19:05,520 INFO     715556 ragflow_server log path: /root/ragflow/logs/ragflow_server.log, log levels: {'peewee': 'WARNING', 'pdfminer': 'WARNING', 'root': 'INFO'}
+2025-04-03 17:19:10,366 INFO     715556 found 0 gpus
+2025-04-03 17:19:12,749 INFO     715556 init database on cluster mode successfully
+2025-04-03 17:19:14,549 INFO     715556 load_model /root/ragflow/rag/res/deepdoc/det.onnx uses CPU
+2025-04-03 17:19:14,703 INFO     715556 load_model /root/ragflow/rag/res/deepdoc/rec.onnx uses CPU
+Traceback (most recent call last):
+  File "/root/ragflow/api/ragflow_server.py", line 36, in <module>
+    from api.apps import app
+  File "/root/ragflow/api/apps/__init__.py", line 137, in <module>
+    client_urls_prefix = [
+  File "/root/ragflow/api/apps/__init__.py", line 138, in <listcomp>
+    register_page(path) for dir in pages_dir for path in search_pages_path(dir)
+  File "/root/ragflow/api/apps/__init__.py", line 120, in register_page
+    spec.loader.exec_module(page)
+  File "/root/ragflow/api/apps/api_app.py", line 45, in <module>
+    from api.db.services.canvas_service import UserCanvasService
+  File "/root/ragflow/api/db/services/canvas_service.py", line 20, in <module>
+    from agent.canvas import Canvas
+  File "/root/ragflow/agent/canvas.py", line 23, in <module>
+    from agent.component import component_class
+  File "/root/ragflow/agent/component/__init__.py", line 41, in <module>
+    from .exesql import ExeSQL, ExeSQLParam
+  File "/root/ragflow/agent/component/exesql.py", line 24, in <module>
+    import pyodbc
+ImportError: libodbc.so.2: cannot open shared object file: No such file or directory
+2025-04-03 17:19:27,225 INFO     715557 task_executor_0 log path: /root/ragflow/logs/task_executor_0.log, log levels: {'peewee': 'WARNING', 'pdfminer': 'WARNING', 'root': 'INFO'}
+2025-04-03 17:19:27,226 INFO     715557 
+  ______           __      ______                     __            
+ /_  __/___ ______/ /__   / ____/  _____  _______  __/ /_____  _____
+  / / / __ `/ ___/ //_/  / __/ | |/_/ _ \/ ___/ / / / __/ __ \/ ___/
+ / / / /_/ (__  ) ,<    / /____>  </  __/ /__/ /_/ / /_/ /_/ / /    
+/_/  \__,_/____/_/|_|  /_____/_/|_|\___/\___/\__,_/\__/\____/_/                               
+    
+2025-04-03 17:19:27,275 INFO     715557 TaskExecutor: RAGFlow version: v0.17.2-187-g2a80aac1 full
+2025-04-03 17:19:27,276 INFO     715557 Use Elasticsearch http://localhost:1200 as the doc engine.
+2025-04-03 17:19:27,305 INFO     715557 GET http://localhost:1200/ [status:200 duration:0.026s]
+2025-04-03 17:19:27,308 INFO     715557 HEAD http://localhost:1200/ [status:200 duration:0.003s]
+2025-04-03 17:19:27,308 INFO     715557 Elasticsearch http://localhost:1200 is healthy.
+2025-04-03 17:19:27,313 WARNING  715557 Load term.freq FAIL!
+2025-04-03 17:19:27,316 WARNING  715557 Realtime synonym is disabled, since no redis connection.
+2025-04-03 17:19:27,320 WARNING  715557 Load term.freq FAIL!
+2025-04-03 17:19:27,323 WARNING  715557 Realtime synonym is disabled, since no redis connection.
+2025-04-03 17:19:27,324 INFO     715557 MAX_CONTENT_LENGTH: 134217728
+2025-04-03 17:19:27,324 INFO     715557 MAX_FILE_COUNT_PER_USER: 0
+2025-04-03 17:19:27,333 WARNING  715557 RedisDB.queue_info rag_flow_svr_queue got exception: no such key
+2025-04-03 17:19:27,334 INFO     715557 task_executor_0 reported heartbeat: {"name": "task_executor_0", "now": "2025-04-03T17:19:27.333+08:00", "boot_at": "2025-04-03T17:19:27.224+08:00", "pending": 0, "lag": 0, "done": 0, "failed": 0, "current": {}}
+
+```
+
+从错误日志中可以看到主要的问题是缺少 ODBC 驱动程序的依赖库：
+
+`ImportError: libodbc.so.2: cannot open shared object file: No such file or directory`
+
+这个错误表明系统缺少 ODBC (Open Database Connectivity) 的相关库文件，这是 pyodbc 包所需要的系统级依赖。让我们安装必要的依赖来解决这个问题。
+
+我将创建一个命令来安装所需的依赖：
+
+```bash
+sudo apt-get update && sudo apt-get install -y unixodbc unixodbc-dev
+```
+
 ### 前端服务报错
 
 #### 在 `nltk` 库的 `punkt` 分词器无法加载
@@ -1236,6 +1335,52 @@ npm install
 
 ```bash
 npm run dev
+```
+
+#### Error occurred while proxying request 192.168.172.128:9222/v1/system/config to http://127.0.0.1:9380/ [ECONNREFUSED] 
+
+```bash
+npm run dev 
+
+> dev
+> cross-env UMI_DEV_SERVER_COMPRESS=none umi dev
+
+info  - [你知道吗？] father 4 正式发布了，详见 https://zhuanlan.zhihu.com/p/558192063
+Mako https://makojs.dev is a new fast Rust based bundler from us, which is heavily optimized for umi and much faster than webpack. Visit https://makojs.dev/docs/getting-started#bundle-with-umi for more details if you want to give it a try.
+info  - Umi v4.4.6
+info  - Preparing...
+info  - [icons] generate icons local:google, local:github
+info  - [plugin: ./node_modules/@umijs/plugins/dist/tailwindcss] tailwindcss service started
+info  - [icons] generate icons local:google, local:github
+
+Rebuilding...
+
+Done in 1540ms.
+info  - MFSU eager strategy enabled
+info  - [MFSU][eager] restored cache
+[HPM] Proxy created: /api,/v1  -> http://127.0.0.1:9380/
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+        ╔════════════════════════════════════════════════════╗
+        ║ App listening at:                                  ║
+        ║  >   Local: http://localhost:9222                  ║
+ready - ║  > Network: http://192.168.172.128:9222            ║
+        ║                                                    ║
+        ║ Now you can open browser with the above addresses↑ ║
+        ╚════════════════════════════════════════════════════╝
+info  - [MFSU][eager] worker init, takes 1617ms
+info  - [icons] generate icons local:google, local:github
+event - [Webpack] Compiled in 25528 ms (1493 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 699 ms (1464 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 617 ms (1464 modules)
+[HPM] Error occurred while proxying request 192.168.172.128:9222/v1/system/config to http://127.0.0.1:9380/ [ECONNREFUSED] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+
 ```
 
 

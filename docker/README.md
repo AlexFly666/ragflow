@@ -1,91 +1,91 @@
 # README
 
 <details open>
-<summary></b>📗 Table of Contents</b></summary>
+<summary></b>📗 目录</b></summary>
 
 - 🐳 [Docker Compose](#-docker-compose)
-- 🐬 [Docker environment variables](#-docker-environment-variables)
-- 🐋 [Service configuration](#-service-configuration)
+- 🐬 [Docker 环境变量](#-docker-环境变量)
+- 🐋 [服务配置](#-服务配置)
 
 </details>
 
 ## 🐳 Docker Compose
 
 - **docker-compose.yml**  
-  Sets up environment for RAGFlow and its dependencies.
+  为 RAGFlow 及其依赖项设置环境。
 - **docker-compose-base.yml**  
-  Sets up environment for RAGFlow's dependencies: Elasticsearch/[Infinity](https://github.com/infiniflow/infinity), MySQL, MinIO, and Redis.
+  为 RAGFlow 的依赖项设置环境：Elasticsearch/[Infinity](https://github.com/infiniflow/infinity)、MySQL、MinIO 和 Redis。
 
 > [!CAUTION]
-> We do not actively maintain **docker-compose-CN-oc9.yml**, **docker-compose-gpu-CN-oc9.yml**, or **docker-compose-gpu.yml**, so use them at your own risk. However, you are welcome to file a pull request to improve any of them.
+> 我们不会积极维护 **docker-compose-CN-oc9.yml**、**docker-compose-gpu-CN-oc9.yml** 或 **docker-compose-gpu.yml**，使用时请自行承担风险。但是，欢迎您提交 pull request 来改进它们。
 
-## 🐬 Docker environment variables
+## 🐬 Docker 环境变量
 
-The [.env](./.env) file contains important environment variables for Docker.
+[.env](./.env) 文件包含 Docker 的重要环境变量。
 
 ### Elasticsearch
 
 - `STACK_VERSION`  
-  The version of Elasticsearch. Defaults to `8.11.3`
+  Elasticsearch 的版本。默认为 `8.11.3`
 - `ES_PORT`  
-  The port used to expose the Elasticsearch service to the host machine, allowing **external** access to the service running inside the Docker container.  Defaults to `1200`.
+  用于将 Elasticsearch 服务暴露给主机的端口，允许**外部**访问 Docker 容器内运行的服务。默认为 `1200`。
 - `ELASTIC_PASSWORD`  
-  The password for Elasticsearch.
+  Elasticsearch 的密码。
 
 ### Kibana
 
 - `KIBANA_PORT`  
-  The port used to expose the Kibana service to the host machine, allowing **external** access to the service running inside the Docker container. Defaults to `6601`.
+  用于将 Kibana 服务暴露给主机的端口，允许**外部**访问 Docker 容器内运行的服务。默认为 `6601`。
 - `KIBANA_USER`  
-  The username for Kibana. Defaults to `rag_flow`.
+  Kibana 的用户名。默认为 `rag_flow`。
 - `KIBANA_PASSWORD`  
-  The password for Kibana. Defaults to `infini_rag_flow`.
+  Kibana 的密码。默认为 `infini_rag_flow`。
 
-### Resource management
+### 资源管理
 
 - `MEM_LIMIT`  
-  The maximum amount of the memory, in bytes, that *a specific* Docker container can use while running. Defaults to `8073741824`.
+  运行时*特定* Docker 容器可以使用的最大内存量（以字节为单位）。默认为 `8073741824`。
 
 ### MySQL
 
 - `MYSQL_PASSWORD`  
-  The password for MySQL.
+  MySQL 的密码。
 - `MYSQL_PORT`  
-  The port used to expose the MySQL service to the host machine, allowing **external** access to the MySQL database running inside the Docker container. Defaults to `5455`.
+  用于将 MySQL 服务暴露给主机的端口，允许**外部**访问 Docker 容器内运行的 MySQL 数据库。默认为 `5455`。
 
 ### MinIO
 
 - `MINIO_CONSOLE_PORT`  
-  The port used to expose the MinIO console interface to the host machine, allowing **external** access to the web-based console running inside the Docker container. Defaults to `9001`
+  用于将 MinIO 控制台界面暴露给主机的端口，允许**外部**访问 Docker 容器内运行的基于 Web 的控制台。默认为 `9001`。
 - `MINIO_PORT`  
-  The port used to expose the MinIO API service to the host machine, allowing **external** access to the MinIO object storage service running inside the Docker container. Defaults to `9000`.
+  用于将 MinIO API 服务暴露给主机的端口，允许**外部**访问 Docker 容器内运行的 MinIO 对象存储服务。默认为 `9000`。
 - `MINIO_USER`  
-  The username for MinIO.
+  MinIO 的用户名。
 - `MINIO_PASSWORD`  
-  The password for MinIO.
+  MinIO 的密码。
 
 ### Redis
 
 - `REDIS_PORT`  
-  The port used to expose the Redis service to the host machine, allowing **external** access to the Redis service running inside the Docker container. Defaults to `6379`.
+  用于将 Redis 服务暴露给主机的端口，允许**外部**访问 Docker 容器内运行的 Redis 服务。默认为 `6379`。
 - `REDIS_PASSWORD`  
-  The password for Redis.
+  Redis 的密码。
 
 ### RAGFlow
 
 - `SVR_HTTP_PORT`  
-  The port used to expose RAGFlow's HTTP API service to the host machine, allowing **external** access to the service running inside the Docker container. Defaults to `9380`.
+  用于将 RAGFlow 的 HTTP API 服务暴露给主机的端口，允许**外部**访问 Docker 容器内运行的服务。默认为 `9380`。
 - `RAGFLOW-IMAGE`  
-  The Docker image edition. Available editions:  
+  Docker 镜像版本。可用版本：
   
-  - `infiniflow/ragflow:v0.17.2-slim` (default): The RAGFlow Docker image without embedding models.  
-  - `infiniflow/ragflow:v0.17.2`: The RAGFlow Docker image with embedding models including:
-    - Built-in embedding models:
+  - `infiniflow/ragflow:v0.17.2-slim`（默认）：不包含嵌入模型的 RAGFlow Docker 镜像。
+  - `infiniflow/ragflow:v0.17.2`：包含以下嵌入模型的 RAGFlow Docker 镜像：
+    - 内置嵌入模型：
       - `BAAI/bge-large-zh-v1.5` 
       - `BAAI/bge-reranker-v2-m3`
       - `maidalun1020/bce-embedding-base_v1`
       - `maidalun1020/bce-reranker-base_v1`
-    - Embedding models that will be downloaded once you select them in the RAGFlow UI:
+    - 在 RAGFlow UI 中选择后将下载的嵌入模型：
       - `BAAI/bge-base-en-v1.5`
       - `BAAI/bge-large-en-v1.5`
       - `BAAI/bge-small-en-v1.5`
@@ -94,72 +94,72 @@ The [.env](./.env) file contains important environment variables for Docker.
       - `jinaai/jina-embeddings-v2-small-en`
       - `nomic-ai/nomic-embed-text-v1.5`
       - `sentence-transformers/all-MiniLM-L6-v2`
-  
-> [!TIP]  
-> If you cannot download the RAGFlow Docker image, try the following mirrors.  
-> 
-> - For the `nightly-slim` edition:  
->   - `RAGFLOW_IMAGE=swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow:nightly-slim` or,
->   - `RAGFLOW_IMAGE=registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow:nightly-slim`.
-> - For the `nightly` edition:  
->   - `RAGFLOW_IMAGE=swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow:nightly` or,
->   - `RAGFLOW_IMAGE=registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow:nightly`.
 
-### Timezone
+> [!TIP]  
+> 如果您无法下载 RAGFlow Docker 镜像，请尝试以下镜像源。
+> 
+> - 对于 `nightly-slim` 版本：  
+>   - `RAGFLOW_IMAGE=swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow:nightly-slim` 或，
+>   - `RAGFLOW_IMAGE=registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow:nightly-slim`。
+> - 对于 `nightly` 版本：  
+>   - `RAGFLOW_IMAGE=swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow:nightly` 或，
+>   - `RAGFLOW_IMAGE=registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow:nightly`。
+
+### 时区
 
 - `TIMEZONE`  
-  The local time zone. Defaults to `'Asia/Shanghai'`.
+  本地时区。默认为 `'Asia/Shanghai'`。
 
-### Hugging Face mirror site
+### Hugging Face 镜像站点
 
 - `HF_ENDPOINT`  
-  The mirror site for huggingface.co. It is disabled by default. You can uncomment this line if you have limited access to the primary Hugging Face domain.
+  huggingface.co 的镜像站点。默认禁用。如果您访问主 Hugging Face 域名受限，可以取消注释此行。
 
 ### MacOS
 
 - `MACOS`  
-  Optimizations for macOS. It is disabled by default. You can uncomment this line if your OS is macOS.
+  针对 macOS 的优化。默认禁用。如果您的操作系统是 macOS，可以取消注释此行。
 
-### Maximum file size
+### 最大文件大小
 
 - `MAX_CONTENT_LENGTH`  
-  The maximum file size for each uploaded file, in bytes. You can uncomment this line if you wish to change the 128M file size limit. After making the change, ensure you update `client_max_body_size` in nginx/nginx.conf correspondingly.
+  每个上传文件的最大大小（以字节为单位）。如果您想更改 128M 的文件大小限制，可以取消注释此行。更改后，请确保相应地更新 nginx/nginx.conf 中的 `client_max_body_size`。
 
-## 🐋 Service configuration
+## 🐋 服务配置
 
-[service_conf.yaml](./service_conf.yaml) specifies the system-level configuration for RAGFlow and is used by its API server and task executor. In a dockerized setup, this file is automatically created based on the [service_conf.yaml.template](./service_conf.yaml.template) file (replacing all environment variables by their values).
+[service_conf.yaml](./service_conf.yaml) 指定了 RAGFlow 的系统级配置，由其 API 服务器和任务执行器使用。在 Docker 化设置中，此文件基于 [service_conf.yaml.template](./service_conf.yaml.template) 文件自动创建（将所有环境变量替换为其值）。
 
 - `ragflow`
-  - `host`: The API server's IP address inside the Docker container. Defaults to `0.0.0.0`.
-  - `port`: The API server's serving port inside the Docker container. Defaults to `9380`.
+  - `host`：Docker 容器内 API 服务器的 IP 地址。默认为 `0.0.0.0`。
+  - `port`：Docker 容器内 API 服务器的服务端口。默认为 `9380`。
 
 - `mysql`
-  - `name`: The MySQL database name. Defaults to `rag_flow`.
-  - `user`: The username for MySQL.
-  - `password`: The password for MySQL.
-  - `port`: The MySQL serving port inside the Docker container. Defaults to `3306`.
-  - `max_connections`: The maximum number of concurrent connections to the MySQL database. Defaults to `100`.
-  - `stale_timeout`: Timeout in seconds.
+  - `name`：MySQL 数据库名称。默认为 `rag_flow`。
+  - `user`：MySQL 的用户名。
+  - `password`：MySQL 的密码。
+  - `port`：Docker 容器内 MySQL 的服务端口。默认为 `3306`。
+  - `max_connections`：MySQL 数据库的最大并发连接数。默认为 `100`。
+  - `stale_timeout`：超时时间（以秒为单位）。
 
 - `minio`
-  - `user`: The username for MinIO.
-  - `password`: The password for MinIO.
-  - `host`: The MinIO serving IP *and* port inside the Docker container. Defaults to `minio:9000`.
+  - `user`：MinIO 的用户名。
+  - `password`：MinIO 的密码。
+  - `host`：Docker 容器内 MinIO 的服务 IP *和*端口。默认为 `minio:9000`。
 
 - `oauth`  
-  The OAuth configuration for signing up or signing in to RAGFlow using a third-party account.  It is disabled by default. To enable this feature, uncomment the corresponding lines in **service_conf.yaml.template**.
-  - `github`: The GitHub authentication settings for your application. Visit the [Github Developer Settings page](https://github.com/settings/developers) to obtain your client_id and secret_key.
+  使用第三方账号注册或登录 RAGFlow 的 OAuth 配置。默认禁用。要启用此功能，请取消注释 **service_conf.yaml.template** 中的相应行。
+  - `github`：应用程序的 GitHub 认证设置。访问 [Github Developer Settings 页面](https://github.com/settings/developers) 获取您的 client_id 和 secret_key。
 
 - `user_default_llm`  
-  The default LLM to use for a new RAGFlow user. It is disabled by default. To enable this feature, uncomment the corresponding lines in **service_conf.yaml.template**.  
-  - `factory`: The LLM supplier. Available options:
+  新 RAGFlow 用户的默认 LLM。默认禁用。要启用此功能，请取消注释 **service_conf.yaml.template** 中的相应行。
+  - `factory`：LLM 提供商。可用选项：
     - `"OpenAI"`
     - `"DeepSeek"`
     - `"Moonshot"`
     - `"Tongyi-Qianwen"`
     - `"VolcEngine"`
     - `"ZHIPU-AI"`
-  - `api_key`: The API key for the specified LLM. You will need to apply for your model API key online.
+  - `api_key`：指定 LLM 的 API 密钥。您需要在线申请模型 API 密钥。
 
 > [!TIP]  
-> If you do not set the default LLM here, configure the default LLM on the **Settings** page in the RAGFlow UI.
+> 如果您没有在此处设置默认 LLM，可以在 RAGFlow UI 的**设置**页面配置默认 LLM。
