@@ -772,38 +772,7 @@ docker build --build-arg NEED_MIRROR=1 -f Dockerfile -t infiniflow/ragflow:night
 
 ## 🔨 以源代码启动服务
 
-本项目使用 Python v3.10 开发
-
-- Python 环境管理 [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/)
-
-#### 1. 安装 Miniconda
-
-```shell
-mkdir -p ~/miniconda3
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
-bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
-rm -rf ~/miniconda3/miniconda.sh
-```
-
-安装完成后，建议新建一个 Python 虚拟环境，命名为 `langchain`。
-
-```shell
-conda create -n ragflow python=3.10
-
-# 激活环境
-conda activate ragflow 
-```
-
-#### 3. 配置 OpenAI API Key
-
-根据你使用的命令行工具，在 `~/.bashrc` 或 `~/.zshrc` 中配置 `OPENAI_API_KEY` 环境变量：
-
-```shell
-export OPENAI_API_KEY="xxxx"
-export DEEPSEEK_API_KEY="xxxx"
-```
-
-#### 4. 启动后端
+### 启动后端
 
 1. 安装 uv。如已经安装，可跳过本步骤：
 
@@ -811,8 +780,6 @@ export DEEPSEEK_API_KEY="xxxx"
    pip install pipx
    pipx install uv
    export UV_INDEX=https://mirrors.aliyun.com/pypi/simple
-   # window环境
-   set UV_INDEX=https://mirrors.aliyun.com/pypi/simple
    ```
 
    > - **`pip` 用于安装 Python 库，这些库是构建其他 Python 项目的基础。** 你通常会在项目特定的虚拟环境中使用 `pip`。
@@ -823,8 +790,6 @@ export DEEPSEEK_API_KEY="xxxx"
    # uv命令生效
    pipx ensurepath
    ```
-
-   
 
 2. 下载源代码并安装 Python 依赖：
 
@@ -860,9 +825,13 @@ export DEEPSEEK_API_KEY="xxxx"
    bash docker/launch_backend_service.sh
    ```
 
+### 启动前端
+
 6. 安装前端依赖：
+
    ```bash
    cd web
+   apt install npm
    npm install
    ```
 
@@ -878,7 +847,9 @@ export DEEPSEEK_API_KEY="xxxx"
 
 ## 常见问题
 
-### uv sync 
+### 后端服务报错
+
+#### uv sync 
 
 ```bash
 uv sync --python 3.10 --all-extras
@@ -1002,6 +973,272 @@ git clone https://github.com/infiniflow/ragflow.git
 cd ragflow
 uv sync --python 3.10 --all-extras
 ```
+
+#### launch_backend_service
+
+```bash
+$ bash docker/launch_backend_service.sh
+Loading environment variables from: /root/AI-Box/rag/ragflow/docker/.env
+Package jemalloc was not found in the pkg-config search path.
+Perhaps you should add the directory containing `jemalloc.pc'
+to the PKG_CONFIG_PATH environment variable
+No package 'jemalloc' found
+```
+
+看起来你的脚本 `launch_backend_service.sh` 运行失败，错误信息表明系统找不到 `jemalloc` 库。`jemalloc` 是一个内存分配器，有时用于提升应用程序的性能。
+
+**问题分析:**
+
+错误信息显示：
+
+1. `pkg-config` 找不到 `jemalloc` 包。`pkg-config` 是一个帮助检索已安装库信息的实用工具。
+
+2. 因此，脚本无法使用以下命令确定  `libjemalloc.so` 的路径：
+
+   ```
+   JEMALLOC_PATH=$(pkg-config --variable=libdir jemalloc)/libjemalloc.so
+   ```
+
+   这很可能导致 `JEMALLOC_PATH` 变量为空或不正确，该变量在之后运行 `task_executor.py` 时通过 `LD_PRELOAD` 使用。
+
+**解决方案:**
+
+你需要在运行此脚本的系统上安装 `jemalloc` 库。由于你的系统是 Ubuntu 22.04，你可以使用 `apt` 包管理器来安装。
+
+**如果你的脚本在 Docker 容器中运行:**
+
+最好的方法是修改你的 Dockerfile，加入安装 `jemalloc` 的步骤。对于 Ubuntu 基础的镜像，你可以添加以下行到你的 Dockerfile 中，在构建或运行你的应用程序的步骤之前：
+
+```Dockerfile
+RUN apt-get update && apt-get install -y libjemalloc-dev
+```
+
+或者有时也可以使用：
+
+```Dockerfile
+RUN apt-get update && apt-get install -y jemalloc
+```
+
+添加这行之后，你需要重新构建你的 Docker 镜像。
+
+**如果你的脚本直接在你的 Ubuntu 22.04 主机上运行 (不在 Docker 中):**
+
+你可以打开终端并运行以下命令来安装 `jemalloc`：
+
+```Bash
+sudo apt-get update
+sudo apt-get install libjemalloc-dev
+```
+
+或者：
+
+```Bash
+sudo apt-get update
+sudo apt-get install jemalloc
+```
+
+### 前端服务报错
+
+#### 在 `nltk` 库的 `punkt` 分词器无法加载
+
+```bash
+2025-04-01 16:29:30,505 INFO     557636 load_model /root/AI-Box/rag/ragflow/rag/res/deepdoc/rec.onnx uses CPU
+Traceback (most recent call last):
+  File "/root/AI-Box/rag/ragflow/api/ragflow_server.py", line 36, in <module>
+    from api.apps import app
+  File "/root/AI-Box/rag/ragflow/api/apps/__init__.py", line 137, in <module>
+    client_urls_prefix = [
+  File "/root/AI-Box/rag/ragflow/api/apps/__init__.py", line 138, in <listcomp>
+    register_page(path) for dir in pages_dir for path in search_pages_path(dir)
+  File "/root/AI-Box/rag/ragflow/api/apps/__init__.py", line 120, in register_page
+    spec.loader.exec_module(page)
+  File "/root/AI-Box/rag/ragflow/api/apps/api_app.py", line 28, in <module>
+    from api.db.services.dialog_service import DialogService, chat
+  File "/root/AI-Box/rag/ragflow/api/db/services/dialog_service.py", line 34, in <module>
+    from rag.app.resume import forbidden_select_fields4resume
+  File "/root/AI-Box/rag/ragflow/rag/app/resume.py", line 27, in <module>
+    from deepdoc.parser.resume import step_one, step_two
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/step_two.py", line 26, in <module>
+    from deepdoc.parser.resume.entities import degrees, schools, corporations
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/entities/corporations.py", line 93, in <module>
+    GOOD_CORP = set([corpNorm(rmNoise(c), False) for c in GOOD_CORP])
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/entities/corporations.py", line 93, in <listcomp>
+    GOOD_CORP = set([corpNorm(rmNoise(c), False) for c in GOOD_CORP])
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/entities/corporations.py", line 68, in corpNorm
+    tks = rag_tokenizer.tokenize(nm).split()
+  File "/root/AI-Box/rag/ragflow/rag/nlp/rag_tokenizer.py", line 300, in tokenize
+    res.extend([self.stemmer.stem(self.lemmatizer.lemmatize(t)) for t in word_tokenize(L)])
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/__init__.py", line 142, in word_tokenize
+    sentences = [text] if preserve_line else sent_tokenize(text, language)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/__init__.py", line 119, in sent_tokenize
+    tokenizer = _get_punkt_tokenizer(language)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/__init__.py", line 105, in _get_punkt_tokenizer
+    return PunktTokenizer(language)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/punkt.py", line 1744, in __init__
+    self.load_lang(lang)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/punkt.py", line 1749, in load_lang
+    lang_dir = find(f"tokenizers/punkt_tab/{lang}/")
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 551, in find
+    return find(modified_name, paths)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 538, in find
+    return ZipFilePathPointer(p, zipentry)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 391, in __init__
+    zipfile = OpenOnDemandZipFile(os.path.abspath(zipfile))
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 1020, in __init__
+    zipfile.ZipFile.__init__(self, filename)
+  File "/root/miniconda3/envs/ragflow/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/root/miniconda3/envs/ragflow/lib/python3.10/zipfile.py", line 1339, in _RealGetContents
+    raise BadZipFile("File is not a zip file")
+zipfile.BadZipFile: File is not a zip file
+Traceback (most recent call last):
+  File "/root/AI-Box/rag/ragflow/rag/svr/task_executor.py", line 55, in <module>
+    from rag.app import laws, paper, presentation, manual, qa, table, book, resume, picture, naive, one, audio, \
+  File "/root/AI-Box/rag/ragflow/rag/app/resume.py", line 27, in <module>
+    from deepdoc.parser.resume import step_one, step_two
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/step_two.py", line 26, in <module>
+    from deepdoc.parser.resume.entities import degrees, schools, corporations
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/entities/corporations.py", line 93, in <module>
+    GOOD_CORP = set([corpNorm(rmNoise(c), False) for c in GOOD_CORP])
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/entities/corporations.py", line 93, in <listcomp>
+    GOOD_CORP = set([corpNorm(rmNoise(c), False) for c in GOOD_CORP])
+  File "/root/AI-Box/rag/ragflow/deepdoc/parser/resume/entities/corporations.py", line 68, in corpNorm
+    tks = rag_tokenizer.tokenize(nm).split()
+  File "/root/AI-Box/rag/ragflow/rag/nlp/rag_tokenizer.py", line 300, in tokenize
+    res.extend([self.stemmer.stem(self.lemmatizer.lemmatize(t)) for t in word_tokenize(L)])
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/__init__.py", line 142, in word_tokenize
+    sentences = [text] if preserve_line else sent_tokenize(text, language)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/__init__.py", line 119, in sent_tokenize
+    tokenizer = _get_punkt_tokenizer(language)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/__init__.py", line 105, in _get_punkt_tokenizer
+    return PunktTokenizer(language)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/punkt.py", line 1744, in __init__
+    self.load_lang(lang)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/tokenize/punkt.py", line 1749, in load_lang
+    lang_dir = find(f"tokenizers/punkt_tab/{lang}/")
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 551, in find
+    return find(modified_name, paths)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 538, in find
+    return ZipFilePathPointer(p, zipentry)
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 391, in __init__
+    zipfile = OpenOnDemandZipFile(os.path.abspath(zipfile))
+  File "/root/AI-Box/rag/ragflow/.venv/lib/python3.10/site-packages/nltk/data.py", line 1020, in __init__
+    zipfile.ZipFile.__init__(self, filename)
+  File "/root/miniconda3/envs/ragflow/lib/python3.10/zipfile.py", line 1272, in __init__
+    self._RealGetContents()
+  File "/root/miniconda3/envs/ragflow/lib/python3.10/zipfile.py", line 1339, in _RealGetContents
+    raise BadZipFile("File is not a zip file")
+zipfile.BadZipFile: File is not a zip file
+
+```
+
+从错误信息来看，问题出在 `nltk` 库的 `punkt` 分词器无法加载，因为它尝试访问的文件不是一个有效的 ZIP 文件。这通常是因为 `nltk` 数据包没有正确下载或损坏。
+
+以下是解决此问题的步骤：
+
+**重新下载 NLTK 数据包**：
+
+- 首先，确保你在正确的 Python 环境中运行以下命令。
+- 打开 Python 解释器并运行以下命令以重新下载 `punkt` 数据包：
+
+```python
+import nltk
+nltk.download('punkt')
+```
+
+#### npm install
+
+```bash
+(ragflow) root@fly:~/ragflow/web# apt install npm
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+npm is already the newest version (8.5.1~ds-1).
+0 upgraded, 0 newly installed, 0 to remove and 67 not upgraded.
+
+(ragflow) root@fly:~/ragflow/web# npm install
+npm ERR! code EBADENGINE
+npm ERR! engine Unsupported engine
+npm ERR! engine Not compatible with your version of node/npm: undefined
+npm ERR! notsup Not compatible with your version of node/npm: undefined
+npm ERR! notsup Required: {"node":">=18.20.4"}
+npm ERR! notsup Actual:   {"npm":"8.5.1","node":"v12.22.9"}
+
+npm ERR! A complete log of this run can be found in:
+npm ERR!     /root/.npm/_logs/2025-04-02T02_29_30_882Z-debug-0.log
+```
+
+这个错误通常是因为 Node.js 版本过低导致的。Vite 需要 Node.js 14.18+ 或 16+ 版本才能正常运行。让我们来解决这个问题：
+
+1. 首先，检查当前 Node.js 版本：
+
+```bash
+node -v
+```
+
+2. 如果版本低于要求，我们需要更新 Node.js。以下是几种更新方法：
+
+方法 1：使用 nvm（Node Version Manager）安装新版本（推荐）：
+
+```bash
+# 如果还没有安装 nvm，先安装 nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# 重新加载 shell 配置
+source ~/.bashrc  # 或 source ~/.zshrc
+
+# 安装最新的 LTS 版本的 Node.js
+nvm install --lts
+
+# 使用新安装的版本
+nvm use --lts
+```
+
+#### Uncaught ChunkLoadError
+
+```bash
+mf-dep____vendor.40280d2f.js:218350 Uncaught ChunkLoadError: Loading chunk mf-dep__2128 failed.
+(missing: http://192.168.172.128:9222/mf-dep__2128.3e2943a6.async.js)
+while loading "./umi-request" from webpack/container/reference/mf
+    at __webpack_require__.f.j (mf-va_remoteEntry.js:1466:29)
+    at mf-va_remoteEntry.js:1168:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (mf-va_remoteEntry.js:1167:67)
+    at ./umi-request (mf-va_remoteEntry.js:682:93)
+    at get (mf-va_remoteEntry.js:1046:23)
+    at handleFunction (remotes loading:2195:1)
+    at onInitialized (remotes loading:2207:55)
+    at handleFunction (remotes loading:2200:1)
+    at onExternal (remotes loading:2206:52)
+    at remotes loading:2197:47
+    at async Promise.all (index 1)
+    at async Promise.all (index 2)
+```
+
+> 这个错误看起来是由于微前端（Micro-Frontend）配置问题导致的，具体是 umi-request 模块加载失败。让我分析一下问题并提供解决方案：
+
+1. 清理缓存和构建文件：
+```bash
+rm -rf node_modules/.cache
+rm -rf src/.umi
+rm -rf src/.umi-production
+```
+
+2. 重新安装依赖：
+```bash
+npm cache clean --force
+rm -rf node_modules
+rm package-lock.json
+npm install
+```
+
+3. 重新启动开发服务器：
+
+```bash
+npm run dev
+```
+
+
 
 ## 📚 技术文档
 
