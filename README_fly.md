@@ -780,7 +780,7 @@ web/
    ```bash
    source .venv/bin/activate
    export PYTHONPATH=$(pwd)
-   bash docker/launch_backend_service.sh
+   bash /root/ragflow/docker/launch_backend_service.sh
    ```
 
 ### 启动前端
@@ -796,11 +796,12 @@ web/
 7. 启动前端服务：
 
    ```bash
+   cd /root/ragflow/web
    npm run dev
    ```
-
+   
    _以下界面说明系统已经成功启动：_
-
+   
    ![](https://github.com/user-attachments/assets/0daf462c-a24d-4496-a66f-92533534e187)
 
 ## 部署常见问题
@@ -1325,8 +1326,8 @@ rm -rf src/.umi-production
 
 2. 重新安装依赖：
 ```bash
-npm cache clean --force
 rm -rf node_modules
+npm cache clean --force
 rm package-lock.json
 npm install
 ```
@@ -1334,6 +1335,17 @@ npm install
 3. 重新启动开发服务器：
 
 ```bash
+npm run dev
+
+# 清理 node_modules
+rm -rf node_modules
+# 清理 umi 缓存
+rm -rf src/.umi
+rm -rf src/.umi-production
+# 重新安装依赖
+npm cache clean --force
+npm install
+# 重新启动项目
 npm run dev
 ```
 
@@ -1386,6 +1398,161 @@ event - [Webpack] Compiled in 617 ms (1464 modules)
 ## 代码调试
 
 https://fancyerii.github.io/2023/09/25/py-remote-debug/
+
+根据你的需求，我来详细说明如何在 Windows 开发机和 Ubuntu 部署机之间进行前后端代码调试。我会分别介绍前端和后端的调试方法。
+
+### 前端调试
+
+#### Windows 本机开发调试
+
+1. 在 Windows 本机克隆代码并设置：
+```bash
+git clone https://github.com/infiniflow/ragflow.git
+cd ragflow/web
+npm install
+```
+
+2. 修改前端代理配置，编辑 `.umirc.ts`：
+```typescript
+export default {
+  proxy: {
+    '/api': {
+      target: 'http://192.168.172.128:9380', // 指向 Ubuntu 虚拟机的后端服务
+      changeOrigin: true,
+    },
+  },
+  // ... 其他配置
+};
+```
+
+3. 启动前端开发服务：
+```bash
+npm run dev
+```
+
+4. 使用 Chrome DevTools 进行调试：
+   - 打开 Chrome 浏览器，访问 `http://localhost:9222`
+   - 按 F12 打开开发者工具
+   - 在 Sources 面板中可以设置断点调试
+   - 在 Network 面板中可以监控 API 请求
+
+#### TanStack
+
+
+
+### 后端调试
+
+#### 方案一：VSCode Remote SSH
+
+1. 在 Windows VSCode 中安装 "Remote - SSH" 插件
+
+2. 配置 SSH 连接到 Ubuntu 虚拟机：
+```bash
+# 在 Windows 的 .ssh/config 中添加：
+Host ubuntu-dev
+    HostName 192.168.172.128
+    User your-username
+    Port 22
+```
+
+3. 在 Ubuntu 虚拟机上安装 Python 调试工具：
+```bash
+pip install debugpy
+```
+
+4. 修改后端启动脚本，添加调试支持。创建 `debug_server.py`：
+```python
+import debugpy
+
+# 允许调试器连接
+debugpy.listen(("0.0.0.0", 5678))
+print("Waiting for debugger attach...")
+debugpy.wait_for_client()
+
+# 导入原有的服务启动代码
+from api.ragflow_server import app
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=9380)
+```
+
+5. 在 VSCode 中配置调试设置（.vscode/launch.json）：
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Remote Attach",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "192.168.172.128",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/root/ragflow"  // Ubuntu 上的代码路径
+                }
+            ]
+        }
+    ]
+}
+```
+
+#### 方案二：PyCharm Professional 远程调试
+
+1. 在 PyCharm Professional 中配置远程解释器：
+   - 转到 File > Settings > Project > Python Interpreter
+   - 添加新的 SSH Interpreter，连接到 Ubuntu 虚拟机
+
+2. 配置远程部署：
+   - 转到 Tools > Deployment > Configuration
+   - 添加 SFTP 配置，映射本地和远程路径
+
+3. 配置远程调试配置：
+   - 创建新的 Python Debug Server 配置
+   - 设置主机为 192.168.172.128
+   - 设置端口为 5678
+
+#### 调试工作流
+
+1. 启动基础服务：
+```bash
+# 在 Ubuntu 虚拟机上
+docker compose -f docker/docker-compose-base.yml up -d
+```
+
+2. 启动后端服务（调试模式）：
+```bash
+# 在 Ubuntu 虚拟机上
+source .venv/bin/activate
+python debug_server.py
+```
+
+3. 启动前端服务：
+```bash
+# 在 Windows 本机
+npm run dev
+```
+
+4. 开始调试：
+   - 前端：使用 Chrome DevTools
+   - 后端：使用 VSCode 或 PyCharm 的调试器
+
+### 注意事项
+
+1. 确保 Windows 和 Ubuntu 虚拟机之间的网络连接正常
+
+2. 检查防火墙设置，确保调试端口（5678）和服务端口（9380）开放
+
+3. 如果遇到 CORS 问题，需要在后端添加相应的 CORS 配置
+
+4. 建议使用版本控制（如 Git）来同步 Windows 和 Ubuntu 之间的代码
+
+这样的配置允许你在 Windows 本机进行代码编写和调试，同时可以远程调试部署在 Ubuntu 虚拟机上的服务。需要注意的是，某些调试功能（如 PyCharm 的远程调试）可能需要专业版本的支持。
+
+## 
 
 ## 📚 技术文档
 
