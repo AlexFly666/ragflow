@@ -11,9 +11,12 @@ services:
     env_file: .env
     environment:
       - node.name=es01
+      # 如需禁用密码认证，注释掉下面这行
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
       - bootstrap.memory_lock=false
       - discovery.type=single-node
+      # 安全认证配置
+      # 如需禁用认证，将 xpack.security.enabled 设置为 false
       - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
@@ -128,49 +131,53 @@ services:
       - ragflow
     restart: on-failure
 
-  # kibana:
-  #   container_name: ragflow-kibana
+  # elasticsearch-head:
+  #   container_name: ragflow-es-head
   #   profiles:
   #     - elasticsearch
-  #   image: kibana:${STACK_VERSION}
+  #   image: mobz/elasticsearch-head:5
   #   ports:
-  #     - ${KIBANA_PORT}:5601
-  #   env_file: .env
-  #   environment:
-  #     - SERVERNAME=kibana
-  #     - ELASTICSEARCH_HOSTS=http://es01:9200
-  #     - ELASTICSEARCH_USERNAME=elastic
-  #     - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
-  #     - TZ=${TIMEZONE}
-  #   mem_limit: ${MEM_LIMIT}
+  #     - ${KIBANA_PORT}:9100
   #   networks:
   #     - ragflow
   #   depends_on:
   #     es01:
   #       condition: service_healthy
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'Looking good'"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 120
+  #   environment:
+  #     - TZ=${TIMEZONE}
   #   restart: on-failure
 
-  elasticsearch-head:
-    container_name: ragflow-es-head
-    profiles:
-      - elasticsearch
-    image: mobz/elasticsearch-head:5
+  kibana:
+    image: kibana:${STACK_VERSION}
+    container_name: ragflow-kibana
+    environment:
+      ELASTICSEARCH_USERNAME: ${KIBANA_USER} 
+      ELASTICSEARCH_PASSWORD: ${KIBANA_PASSWORD} 
+      ELASTICSEARCH_HOSTS: "http://es01:9200"
     ports:
-      - ${KIBANA_PORT}:9100
-    networks:
-      - ragflow
+      - ${KIBANA_PORT}:5601
     depends_on:
       es01:
         condition: service_healthy
+      kibana-user-init:
+        condition: service_completed_successfully
+    networks:
+      - ragflow
+  kibana-user-init:
+    image: appropriate/curl
+    depends_on:
+      es01:
+        condition: service_healthy
+    volumes:
+      - ./init-kibana.sh:/app/init-kibana.sh
     environment:
-      - TZ=${TIMEZONE}
-    restart: on-failure
-
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - KIBANA_USER=${KIBANA_USER}
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
+    command: /bin/sh -c "sh /app/init-kibana.sh"
+    networks:
+      - ragflow
+    restart: 'no'
 
 volumes:
   esdata01:
