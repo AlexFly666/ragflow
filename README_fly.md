@@ -804,6 +804,53 @@ web/
    
    ![](https://github.com/user-attachments/assets/0daf462c-a24d-4496-a66f-92533534e187)
 
+### 组件访问
+
+根据 `docker/.env` 文件的配置，以下是各个组件的详细访问信息：
+
+#### 1. ElasticSearch
+- 访问地址：`http://192.168.172.128:1200`
+- 账号：elastic
+- 密码：infini_rag_flow
+
+#### 2. Kibana
+- 访问地址：`http://192.168.172.128:6601`
+- 账号：rag_flow
+- 密码：infini_rag_flow
+
+#### 3. Infinity（向量数据库，可选）
+- Thrift 端口：23817
+- HTTP 端口：23820
+- PostgreSQL 端口：5432
+- 主机名：infinity
+
+#### 4. MySQL
+- 访问端口：`5455`
+- 数据库名：rag_flow
+- 密码：infini_rag_flow
+
+#### 5. MinIO（对象存储）
+- API 访问地址：`http://192.168.172.128:9000`
+- 控制台地址：`http://192.168.172.128:9001`
+- 用户名：rag_flow
+- 密码：infini_rag_flow
+
+#### 6. Redis
+- 访问地址：`redis:6379`
+- 密码：infini_rag_flow
+
+#### 7. RAGFlow API服务
+- HTTP API 地址：`http://192.168.172.128:9380`
+
+### 注意事项：
+1. 所有服务都配置在同一个 Docker 网络中，服务之间可以通过服务名互相访问
+2. 对外暴露的端口可以通过 localhost 访问
+3. 文件上传大小默认限制为 1GB
+4. 系统默认启用了用户注册功能（REGISTER_ENABLED=1）
+5. 时区设置为 Asia/Shanghai
+
+这些配置都可以在 `docker/.env` 文件中进行修改。如果需要修改任何配置，建议在更改前备份原始配置文件。
+
 ## 部署常见问题
 
 ### 后端服务报错

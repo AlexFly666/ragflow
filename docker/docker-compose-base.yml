@@ -128,6 +128,48 @@ services:
       - ragflow
     restart: on-failure
 
+  # kibana:
+  #   container_name: ragflow-kibana
+  #   profiles:
+  #     - elasticsearch
+  #   image: kibana:${STACK_VERSION}
+  #   ports:
+  #     - ${KIBANA_PORT}:5601
+  #   env_file: .env
+  #   environment:
+  #     - SERVERNAME=kibana
+  #     - ELASTICSEARCH_HOSTS=http://es01:9200
+  #     - ELASTICSEARCH_USERNAME=elastic
+  #     - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
+  #     - TZ=${TIMEZONE}
+  #   mem_limit: ${MEM_LIMIT}
+  #   networks:
+  #     - ragflow
+  #   depends_on:
+  #     es01:
+  #       condition: service_healthy
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'Looking good'"]
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 120
+  #   restart: on-failure
+
+  elasticsearch-head:
+    container_name: ragflow-es-head
+    profiles:
+      - elasticsearch
+    image: mobz/elasticsearch-head:5
+    ports:
+      - ${KIBANA_PORT}:9100
+    networks:
+      - ragflow
+    depends_on:
+      es01:
+        condition: service_healthy
+    environment:
+      - TZ=${TIMEZONE}
+    restart: on-failure
 
 
 volumes:

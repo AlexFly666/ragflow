@@ -115,6 +115,16 @@
 - `HF_ENDPOINT`  
   huggingface.co 的镜像站点。默认禁用。如果您访问主 Hugging Face 域名受限，可以取消注释此行。
 
+```bash
+{
+        "registry-mirrors": [
+                "https://hub-cache.moelove.info"
+        ]
+}
+```
+
+
+
 ### MacOS
 
 - `MACOS`  
