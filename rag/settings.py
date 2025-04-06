@@ -1,3 +1,26 @@
+"""
+RAG流程系统配置
+=============
+
+本模块管理RAG流程系统的所有配置设置，包括：
+- 存储配置（MINIO、S3、Azure、OSS）
+- 文档引擎设置（Elasticsearch、Infinity）
+- Redis缓存配置
+- 服务器队列设置
+- 资源限制和约束
+- GPU/设备配置
+
+配置可以通过环境变量和配置文件进行自定义。
+设置从conf目录加载，并可以通过环境变量覆盖。
+
+主要特性：
+- 多种存储后端支持
+- 灵活的文档引擎选择
+- Redis集成缓存
+- GPU检测和并行处理
+- 服务器任务队列管理
+"""
+
 #
 #  Copyright 2024 The InfiniFlow Authors. All Rights Reserved.
 #
