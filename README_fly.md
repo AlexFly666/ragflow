@@ -818,6 +818,78 @@ web/
 - 账号：rag_flow
 - 密码：infini_rag_flow
 
+##### 使用 Kibana 查询和可视化 Elasticsearch 中的向量数据
+
+根据配置文件，我可以看到：
+
+- Kibana 运行在 6601 端口 (KIBANA_PORT=6601)
+- Elasticsearch 运行在 1200 端口 (ES_PORT=1200)
+- 登录凭证：
+  - 用户名：rag_flow (KIBANA_USER)
+  - 密码：infini_rag_flow (KIBANA_PASSWORD)
+
+让我为你详细说明如何使用 Kibana 查询向量数据：
+
+1. **访问 Kibana**
+   - 打开浏览器，访问 `http://localhost:6601`
+   - 使用以下凭证登录：
+     - 用户名：rag_flow
+     - 密码：infini_rag_flow
+
+2. **查看向量数据**
+   在 Kibana 中查询向量数据的步骤：
+
+   a. **使用 Dev Tools**
+   - 点击左侧菜单栏的 "Dev Tools"（开发工具）
+   - 在 Console 中可以直接执行 Elasticsearch 查询
+
+   b. **查看索引数据**
+   ```bash
+   # 查看所有索引
+   GET _cat/indices?v
+   # 查找ragflow_开头
+   # 如：ragflow_e24416a9106d11f0a4a9c73ddb33c1ac
+   
+   # 查看向量索引的映射结构
+   GET your_index_name/_mapping
+   
+   GET ragflow_e24416a9106d11f0a4a9c73ddb33c1ac/_mapping
+   ```
+   
+   c. **查询向量数据**
+   ```json
+   # 基本查询示例
+   GET your_index_name/_search
+   {
+     "query": {
+       "match_all": {}
+     }
+   }
+   
+   # 向量相似度查询示例
+   GET ragflow_e24416a9106d11f0a4a9c73ddb33c1ac/_search
+   {
+     "query": {
+       "script_score": {
+         "query": {
+           "match_all": {}
+         },
+         "script": {
+           "source": "cosineSimilarity(params.query_vector, 'vector_field') + 1.0",
+           "params": {
+             "query_vector": [0.024323905304040452] // 你的查询向量
+           }
+         }
+       }
+     }
+   }
+   ```
+
+**注意事项：**
+1. 向量数据通常是高维数据，直接可视化可能不太直观。建议先进行降维处理（如 PCA、t-SNE）后再可视化。
+2. 在进行向量相似度搜索时，确保使用正确的相似度计算方法（cosine similarity、euclidean distance 等）。
+3. 对于大规模向量数据，建议使用适当的分页和限制来优化查询性能。
+
 #### 3. Infinity（向量数据库，可选）
 - Thrift 端口：23817
 - HTTP 端口：23820
