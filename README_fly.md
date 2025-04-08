@@ -1686,3 +1686,5 @@ npm run dev
 ## 参考
 
 1. 千问模型：https://bailian.console.aliyun.com/?apiKey=1#/api-key
+1. MCP: https://github.com/zalan159/ragflow-mcpclient
+1. 团队管理和用户配置：https://github.com/zstar1003/ragflow-plus
