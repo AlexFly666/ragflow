@@ -13,6 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+"""
+语音转文本模型实现
+主要功能:
+1. 语音识别转写
+2. 支持多种ASR模型:
+   - Whisper
+   - 讯飞语音等
+3. 核心方法:
+   - transcription(): 语音转文本
+4. 处理音频格式、语言等
+"""
 import os
 import requests
 from openai.lib.azure import AzureOpenAI

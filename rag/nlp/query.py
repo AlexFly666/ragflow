@@ -14,6 +14,22 @@
 #  limitations under the License.
 #
 
+"""
+RAG系统的查询处理模块
+
+该模块负责处理用户查询，实现了一个全文检索查询器。主要功能包括：
+1. 查询预处理和分词
+2. 同义词扩展
+3. 查询权重计算
+4. 混合相似度计算(词项相似度+向量相似度)
+
+主要方法：
+- question(): 处理问题查询
+- hybrid_similarity(): 计算混合相似度
+- token_similarity(): 计算词项相似度
+- paragraph(): 处理段落文本
+"""
+
 import logging
 import json
 import math
@@ -25,6 +41,15 @@ from rag.nlp import rag_tokenizer, term_weight, synonym
 
 
 class FulltextQueryer:
+    """
+    全文检索查询器
+    
+    实现了基于ElasticSearch的全文检索功能，支持：
+    1. 查询预处理(去停用词、标准化等)
+    2. 同义词扩展
+    3. 混合相似度计算
+    4. 查询权重自动调整
+    """
     def __init__(self):
         self.tw = term_weight.Dealer()
         self.syn = synonym.Dealer()

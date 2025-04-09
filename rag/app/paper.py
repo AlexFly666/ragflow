@@ -23,7 +23,11 @@ from rag.nlp import rag_tokenizer, tokenize, tokenize_table, add_positions, bull
 from deepdoc.parser import PdfParser, PlainParser
 import numpy as np
 
-
+# 主要功能:处理学术论文文档
+# - 识别论文结构(摘要、引言、方法、结果等)
+# - 提取作者、标题、关键词等元数据
+# - 处理参考文献
+# - 支持公式和图表提取
 class Pdf(PdfParser):
     def __init__(self):
         self.model_speciess = ParserType.PAPER.value

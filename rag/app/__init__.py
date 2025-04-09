@@ -13,3 +13,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+
+# RAG应用模块的初始化文件
+# 包含版权声明和Apache 2.0许可证信息
+# 用于标记当前目录为Python包

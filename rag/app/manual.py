@@ -26,7 +26,11 @@ from deepdoc.parser import PdfParser, PlainParser, DocxParser
 from docx import Document
 from PIL import Image
 
-
+# 主要功能:处理技术手册、说明书等文档
+# - 识别手册特定结构(步骤、警告、注意事项等)
+# - 处理图文混排
+# - 保持手册文档的层级关系
+# - 支持表格和图片提取
 class Pdf(PdfParser):
     def __init__(self):
         self.model_speciess = ParserType.MANUAL.value

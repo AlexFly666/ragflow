@@ -25,7 +25,11 @@ from rag.nlp import rag_tokenizer
 from deepdoc.parser import PdfParser, PptParser, PlainParser
 from PyPDF2 import PdfReader as pdf2_read
 
-
+# 主要功能:处理演示文稿(PPT等)
+# - 提取幻灯片文本和图片
+# - 保持幻灯片顺序
+# - 处理幻灯片注释
+# - 支持多种演示文稿格式
 class Ppt(PptParser):
     def __call__(self, fnm, from_page, to_page, callback=None):
         txts = super().__call__(fnm, from_page, to_page)

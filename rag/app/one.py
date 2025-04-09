@@ -24,7 +24,11 @@ from rag.app import naive
 from rag.nlp import rag_tokenizer, tokenize
 from deepdoc.parser import PdfParser, ExcelParser, PlainParser, HtmlParser
 
-
+# 主要功能:处理单个文档文件
+# - 将整个文档作为一个块处理
+# - 保持文档原始顺序
+# - 支持多种文档格式
+# - 适用于较短的文档
 class Pdf(PdfParser):
     def __call__(self, filename, binary=None, from_page=0,
                  to_page=100000, zoomin=3, callback=None):

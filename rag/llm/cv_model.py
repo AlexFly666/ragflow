@@ -33,7 +33,19 @@ from rag.nlp import is_english
 from rag.prompts import vision_llm_describe_prompt
 from rag.utils import num_tokens_from_string
 
-
+"""
+计算机视觉模型实现
+主要功能:
+1. 图像理解和描述
+2. 支持多种视觉模型:
+   - GPT-4V
+   - 通义千问VL
+   - 文心一言等
+3. 核心方法:
+   - describe(): 图像描述
+   - describe_with_prompt(): 带提示的图像描述
+   - chat(): 基于图像的对话
+"""
 class Base(ABC):
     def __init__(self, key, model_name):
         pass

@@ -13,7 +13,15 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+"""
+RAG系统的同义词处理模块
 
+该模块负责处理同义词扩展，支持中英文同义词，主要功能包括：
+1. 同义词词典加载和管理
+2. WordNet英文同义词查询
+3. 自定义同义词词典支持
+4. Redis缓存支持
+"""
 import logging
 import json
 import os
@@ -24,6 +32,20 @@ from api.utils.file_utils import get_project_base_directory
 
 
 class Dealer:
+    """
+    同义词处理器
+    
+    实现了同义词的查找和扩展功能：
+    1. 支持WordNet英文同义词
+    2. 支持自定义同义词词典
+    3. 支持Redis缓存
+    4. 支持定期更新词典
+
+    主要方法：
+    - lookup(): 查找同义词
+    - load(): 加载/更新词典
+    
+    """
     def __init__(self, redis=None):
 
         self.lookup_num = 100000000

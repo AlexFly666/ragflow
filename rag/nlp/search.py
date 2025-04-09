@@ -13,6 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+"""
+RAG系统的搜索实现模块
+
+该模块实现了RAG系统的核心搜索功能，包括：
+1. 文本检索和向量检索的混合搜索
+2. 搜索结果重排序
+3. 标签系统
+4. 文档聚合
+5. 相关度评分
+"""
+
 import logging
 import re
 from collections import OrderedDict
@@ -29,6 +40,22 @@ def index_name(uid): return f"ragflow_{uid}"
 
 
 class Dealer:
+    """
+    搜索处理器类
+    
+    实现了RAG系统的核心搜索功能：
+    1. 混合搜索(文本+向量)
+    2. 搜索结果重排序
+    3. 标签系统维护
+    4. 文档聚合统计
+    5. 相关度评分计算
+
+     主要方法：
+    - search(): 执行搜索
+    - rerank()/rerank_by_model(): 结果重排序
+    - insert_citations(): 插入引用
+    - tag_content()/tag_query(): 标签处理
+    """
     def __init__(self, dataStore: DocStoreConnection):
         self.qryr = query.FulltextQueryer()
         self.dataStore = dataStore

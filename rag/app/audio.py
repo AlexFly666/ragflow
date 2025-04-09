@@ -21,7 +21,10 @@ from rag.nlp import rag_tokenizer
 from api.db.services.llm_service import LLMBundle
 from rag.nlp import tokenize
 
-
+# 主要功能:处理音频文件并转换为文本
+# - 使用语音识别模型将音频转换为文本
+# - 支持多语言处理
+# - 将音频内容分块以便于后续检索
 def chunk(filename, binary, tenant_id, lang, callback=None, **kwargs):
     doc = {
         "docnm_kwd": filename,

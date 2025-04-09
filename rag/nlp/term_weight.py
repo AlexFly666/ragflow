@@ -1,18 +1,13 @@
-    #
-#  Copyright 2024 The InfiniFlow Authors. All Rights Reserved.
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
+"""
+RAG系统的词项权重计算模块
+
+该模块负责计算文档和查询中词项的权重，主要功能包括：
+1. 停用词过滤
+2. 词项权重计算(TF-IDF)
+3. 命名实体识别
+4. 词性标注权重
+5. 自定义词典加权
+"""
 
 import logging
 import math
@@ -25,6 +20,23 @@ from api.utils.file_utils import get_project_base_directory
 
 
 class Dealer:
+    """
+    词项权重处理器
+    
+    实现了词项权重的计算功能：
+    1. 停用词过滤
+    2. TF-IDF计算
+    3. 命名实体识别和加权
+    4. 词性标注权重
+    5. 自定义词典权重
+
+    主要方法：
+    - weights(): 计算词项权重
+    - pretoken(): 预处理分词
+    - tokenMerge(): 合并分词
+    - ner(): 命名实体识别   
+    - split(): 分词处理
+    """
     def __init__(self):
         self.stop_words = set(["请问",
                                "您",

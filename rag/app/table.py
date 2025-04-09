@@ -28,7 +28,11 @@ from deepdoc.parser.utils import get_text
 from rag.nlp import rag_tokenizer, tokenize
 from deepdoc.parser import ExcelParser
 
-
+# 主要功能:处理表格数据
+# - 支持多种表格格式(Excel、CSV等)
+# - 智能识别数据类型
+# - 处理表头和元数据
+# - 提供结构化输出
 class Excel(ExcelParser):
     def __call__(self, fnm, binary=None, from_page=0,
                  to_page=10000000000, callback=None):

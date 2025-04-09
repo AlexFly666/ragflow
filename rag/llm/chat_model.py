@@ -13,6 +13,21 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+"""
+聊天对话模型的具体实现
+主要功能:
+1. 定义Base基类规范接口
+2. 实现各大厂商的对话模型:
+   - OpenAI GPT系列
+   - Azure OpenAI
+   - 百度文心一言
+   - 阿里通义千问
+   - 讯飞星火等
+3. 统一的对话接口:
+   - chat(): 普通对话
+   - chat_streamly(): 流式对话
+4. 处理上下文、Token计数等通用功能
+"""
 import asyncio
 import json
 import logging

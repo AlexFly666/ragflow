@@ -33,8 +33,28 @@ from markdown import markdown
 from rag.utils import get_float
 
 
+# 问答(Q&A)处理核心模块
+# 主要功能：
+# - 从不同格式文档(PDF、Excel、Word)中提取问答对
+# - 支持表格解析和图片提取
+# - 包含三个主要解析器类：Excel、Pdf和Docx
+# - 提供文档分块和问答对提取的核心功能
+
 class Excel(ExcelParser):
+    """Excel问答文档处理类
+    用于处理存储在Excel中的问答对数据
+    """
     def __call__(self, fnm, binary=None, callback=None):
+        """处理Excel文档中的问答对
+        
+        Args:
+            fnm: Excel文件名或路径
+            binary: 二进制内容(可选)
+            callback: 进度回调函数
+            
+        Returns:
+            list: 问答对列表,每个元素为(问题,答案)元组
+        """
         if not binary:
             wb = load_workbook(fnm)
         else:
@@ -77,8 +97,36 @@ class Excel(ExcelParser):
 
 
 class Pdf(PdfParser):
+    """PDF问答文档处理类
+    专门用于处理PDF格式的问答文档,支持:
+    - 问答对的识别和提取
+    - 保持问答的层级结构
+    - 处理带有图片的问答
+    """
     def __call__(self, filename, binary=None, from_page=0,
                  to_page=100000, zoomin=3, callback=None):
+        """处理PDF文档中的问答内容
+        
+        主要步骤:
+        1. OCR处理页面内容
+        2. 识别文档布局
+        3. 提取表格和图片
+        4. 分析问答结构
+        5. 合并相关内容
+        
+        Args:
+            filename: PDF文件名或路径
+            binary: 二进制内容(可选)
+            from_page: 起始页码
+            to_page: 结束页码
+            zoomin: OCR缩放比例
+            callback: 进度回调函数
+            
+        Returns:
+            tuple: (问答对列表, 表格列表)
+            - 问答对列表: [(问题, 答案, 图片, 位置信息),...]
+            - 表格列表: 文档中的表格内容
+        """
         start = timer()
         callback(msg="OCR started")
         self.__images__(
@@ -169,6 +217,15 @@ class Pdf(PdfParser):
         return qai_list, tbls
 
     def get_tbls_info(self, tbls, tbl_index):
+        """获取表格的详细信息
+        
+        Args:
+            tbls: 表格列表
+            tbl_index: 当前表格索引
+            
+        Returns:
+            tuple: (页码,左边界,右边界,上边界,下边界,标记,文本内容)
+        """
         if tbl_index >= len(tbls):
             return 1, 0, 0, 0, 0, '@@0\t0\t0\t0\t0##', ''
         tbl_pn = tbls[tbl_index][1][0][0]+1
@@ -183,10 +240,23 @@ class Pdf(PdfParser):
 
 
 class Docx(DocxParser):
+    """Word文档问答处理类
+    专门用于处理Word格式的问答文档
+    """
     def __init__(self):
+        """初始化Word处理器"""
         pass
 
     def get_picture(self, document, paragraph):
+        """从段落中提取图片
+        
+        Args:
+            document: Word文档对象
+            paragraph: 段落对象
+            
+        Returns:
+            PIL.Image: 提取的图片,如果没有则返回None
+        """
         img = paragraph._element.xpath('.//pic:pic')
         if not img:
             return None
@@ -260,11 +330,38 @@ class Docx(DocxParser):
 
 
 def rmPrefix(txt):
+    """移除问答标记前缀
+    
+    移除常见的问答标记,如:
+    - Q:/A:
+    - 问:/答:
+    - Question:/Answer:
+    等
+    
+    Args:
+        txt: 输入文本
+        
+    Returns:
+        str: 移除前缀后的文本
+    """
     return re.sub(
         r"^(问题|答案|回答|user|assistant|Q|A|Question|Answer|问|答)[\t:： ]+", "", txt.strip(), flags=re.IGNORECASE)
 
 
 def beAdocPdf(d, q, a, eng, image, poss):
+    """将PDF问答对转换为文档格式
+    
+    Args:
+        d: 文档对象
+        q: 问题文本
+        a: 答案文本
+        eng: 是否英文
+        image: 相关图片
+        poss: 位置信息
+        
+    Returns:
+        dict: 处理后的文档对象
+    """
     qprefix = "Question: " if eng else "问题："
     aprefix = "Answer: " if eng else "回答："
     d["content_with_weight"] = "\t".join(
@@ -307,16 +404,41 @@ def mdQuestionLevel(s):
 
 
 def chunk(filename, binary=None, lang="Chinese", callback=None, **kwargs):
-    """
-        Excel and csv(txt) format files are supported.
-        If the file is in excel format, there should be 2 column question and answer without header.
-        And question column is ahead of answer column.
-        And it's O.K if it has multiple sheets as long as the columns are rightly composed.
-
-        If it's in csv format, it should be UTF-8 encoded. Use TAB as delimiter to separate question and answer.
-
-        All the deformed lines will be ignored.
-        Every pair of Q&A will be treated as a chunk.
+    """问答文档处理主函数
+    
+    支持以下格式:
+    1. Excel文件
+       - 要求有问题和答案两列
+       - 支持多个工作表
+       
+    2. CSV/TXT文件
+       - 使用TAB分隔符
+       - UTF-8编码
+       
+    3. PDF文件
+       - 自动识别问答结构
+       - 支持图文混排
+       
+    4. Word文件
+       - 支持多级问答
+       - 支持图片提取
+       
+    5. Markdown文件
+       - 使用标题层级表示问答关系
+       - 支持表格
+    
+    Args:
+        filename: 文件名或路径
+        binary: 二进制内容(可选)
+        lang: 文档语言,默认中文
+        callback: 进度回调函数
+        **kwargs: 额外参数
+        
+    Returns:
+        list: 处理后的问答文档块列表
+        
+    Raises:
+        NotImplementedError: 不支持的文件格式
     """
     eng = lang.lower() == "english"
     res = []

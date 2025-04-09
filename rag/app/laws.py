@@ -27,7 +27,11 @@ from rag.nlp import bullets_category, remove_contents_table, hierarchical_merge,
 from rag.nlp import rag_tokenizer
 from deepdoc.parser import PdfParser, DocxParser, PlainParser, HtmlParser
 
-
+# 主要功能:处理法律相关文档
+# - 识别法律文档特定结构(条款、章节等)
+# - 保持法律文档的层级关系
+# - 支持交叉引用处理
+# - 专门的分块策略以保持法律文档的完整性
 class Docx(DocxParser):
     def __init__(self):
         pass

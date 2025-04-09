@@ -34,12 +34,27 @@ from deepdoc.parser.pdf_parser import PlainParser, VisionParser
 from rag.nlp import concat_img, find_codec, naive_merge, naive_merge_docx, rag_tokenizer, tokenize_chunks, tokenize_chunks_docx, tokenize_table
 from rag.utils import num_tokens_from_string
 
-
+# 主要功能:提供基础的文档处理功能
+# - 作为其他专门处理器的基类
+# - 提供通用的文本提取方法
+# - 实现基础的分块策略
+# - 处理通用文档格式
 class Docx(DocxParser):
+    """基础的Word文档处理类
+    继承自DocxParser,提供Word文档的基础解析功能
+    """
     def __init__(self):
+        """初始化Docx处理器"""
         pass
 
     def get_picture(self, document, paragraph):
+        """从Word段落中提取图片
+        Args:
+            document: Word文档对象
+            paragraph: 段落对象
+        Returns:
+            PIL.Image: 提取的图片对象,如果没有图片则返回None
+        """
         img = paragraph._element.xpath('.//pic:pic')
         if not img:
             return None
@@ -64,11 +79,25 @@ class Docx(DocxParser):
             return None
 
     def __clean(self, line):
+        """清理文本行
+        去除多余的空格和特殊字符
+        Args:
+            line: 输入文本行
+        Returns:
+            str: 清理后的文本
+        """
         line = re.sub(r"\u3000", " ", line).strip()
         return line
 
     def __get_nearest_title(self, table_index, filename):
-        """Get the hierarchical title structure before the table"""
+        """获取表格最近的标题
+        通过上下文分析找到表格相关的标题文本
+        Args:
+            table_index: 表格索引
+            filename: 文件名
+        Returns:
+            str: 找到的标题文本
+        """
         import re
         from docx.text.paragraph import Paragraph
         
@@ -173,6 +202,15 @@ class Docx(DocxParser):
         return ""
 
     def __call__(self, filename, binary=None, from_page=0, to_page=100000):
+        """处理Word文档的主函数
+        Args:
+            filename: 文件名或路径
+            binary: 二进制内容(可选)
+            from_page: 起始页码
+            to_page: 结束页码
+        Returns:
+            list: 包含处理后文本块的列表
+        """
         self.doc = Document(
             filename) if not binary else Document(BytesIO(binary))
         pn = 0
@@ -239,11 +277,27 @@ class Docx(DocxParser):
 
 
 class Pdf(PdfParser):
+    """基础的PDF文档处理类
+    继承自PdfParser,提供PDF文档的基础解析功能
+    """
     def __init__(self):
+        """初始化PDF处理器"""
         super().__init__()
 
     def __call__(self, filename, binary=None, from_page=0,
                  to_page=100000, zoomin=3, callback=None, separate_tables_figures=False):
+        """处理PDF文档的主函数
+        Args:
+            filename: 文件名或路径 
+            binary: 二进制内容(可选)
+            from_page: 起始页码
+            to_page: 结束页码
+            zoomin: 放大倍数,用于OCR
+            callback: 进度回调函数
+            separate_tables_figures: 是否分离表格和图片
+        Returns:
+            tuple: (文本内容列表, 表格列表)
+        """
         start = timer()
         first_start = start
         callback(msg="OCR started")
@@ -284,7 +338,17 @@ class Pdf(PdfParser):
 
 
 class Markdown(MarkdownParser):
+    """Markdown文档处理类
+    提供Markdown格式文档的解析功能
+    """
     def __call__(self, filename, binary=None):
+        """处理Markdown文档
+        Args:
+            filename: 文件名或路径
+            binary: 二进制内容(可选) 
+        Returns:
+            list: 处理后的文本块列表
+        """
         if binary:
             encoding = find_codec(binary)
             txt = binary.decode(encoding, errors="ignore")
@@ -314,11 +378,32 @@ class Markdown(MarkdownParser):
 
 def chunk(filename, binary=None, from_page=0, to_page=100000,
           lang="Chinese", callback=None, **kwargs):
-    """
-        Supported file formats are docx, pdf, excel, txt.
-        This method apply the naive ways to chunk files.
-        Successive text will be sliced into pieces using 'delimiter'.
-        Next, these successive pieces are merge into chunks whose token number is no more than 'Max token number'.
+    """通用文档分块处理函数
+    
+    这是一个通用的文档处理入口函数,可以处理多种格式的文档并进行分块。
+    支持的文件格式包括:
+    - PDF文档
+    - Word文档(docx)
+    - Markdown文档
+    - 文本文档
+    
+    Args:
+        filename: 文件名或路径
+        binary: 文件的二进制内容(可选)
+        from_page: 处理的起始页码
+        to_page: 处理的结束页码 
+        lang: 文档语言,默认为中文
+        callback: 进度回调函数
+        **kwargs: 额外的参数选项
+        
+    Returns:
+        list: 包含处理后文档块的列表,每个块包含:
+            - 文本内容
+            - 元数据(如页码、位置等)
+            - 分块标识符
+            
+    Raises:
+        NotImplementedError: 当文件格式不支持时抛出
     """
 
     is_english = lang.lower() == "english"  # is_english(cks)
@@ -480,6 +565,9 @@ if __name__ == "__main__":
     import sys
 
     def dummy(prog=None, msg=""):
+        """空的回调函数
+        用于在没有提供回调函数时作为默认值
+        """
         pass
 
     chunk(sys.argv[1], from_page=0, to_page=10, callback=dummy)

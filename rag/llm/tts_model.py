@@ -13,7 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
+"""
+文本转语音模型实现
+主要功能:
+1. 文本转语音合成
+2. 支持多种TTS模型:
+   - OpenAI TTS
+   - 讯飞语音等
+3. 核心方法:
+   - tts(): 文本转语音
+4. 处理音频格式、声音选择等
+"""
 import _thread as thread
 import base64
 import hashlib

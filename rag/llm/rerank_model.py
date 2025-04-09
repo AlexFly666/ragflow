@@ -13,6 +13,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+"""
+文档重排序模型实现
+主要功能:
+1. 对检索结果进行精排序
+2. 支持多种重排序模型:
+   - BGE Reranker
+   - Cohere Rerank等
+3. 核心方法:
+   - similarity(): 计算查询和文档的相关性分数
+4. 处理批量打分、归一化等
+"""
 import re
 import threading
 from collections.abc import Iterable

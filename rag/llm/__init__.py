@@ -15,6 +15,19 @@
 #
 #  AFTER UPDATING THIS FILE, PLEASE ENSURE THAT docs/references/supported_models.mdx IS ALSO UPDATED for consistency!
 #
+"""
+LLM模型调用封装库的主入口文件
+主要功能:
+1. 导出所有可用的模型类供外部使用
+2. 统一管理所有模型的导入
+3. 提供模型分类:
+   - EmbeddingModel: 文本向量嵌入模型
+   - CvModel: 计算机视觉模型
+   - ChatModel: 聊天对话模型  
+   - RerankModel: 文档重排序模型
+   - Seq2txtModel: 语音转文本模型
+   - TTSModel: 文本转语音模型
+"""
 from .embedding_model import (
     OllamaEmbed,
     LocalAIEmbed,

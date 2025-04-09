@@ -14,6 +14,23 @@
 #  limitations under the License.
 #
 
+"""
+RAG系统的分词器实现模块
+
+该模块实现了一个混合分词系统，可以同时处理中文和英文文本。
+核心功能：
+    1. 基于字典树(Trie)的中英文混合分词
+    2. 支持最大正向/反向匹配
+    3. 词频统计和词性标注
+    4. 繁简转换和全角半角转换
+    
+    主要方法：
+    - tokenize(): 主分词方法
+    - fine_grained_tokenize(): 细粒度分词
+    - maxForward_/maxBackward_(): 正向/反向最大匹配
+    - dfs_(): 基于字典树的深度优先搜索分词
+"""
+
 import logging
 import copy
 import datrie
@@ -29,6 +46,16 @@ from api.utils.file_utils import get_project_base_directory
 
 
 class RagTokenizer:
+    """
+    RAG分词器类
+    
+    实现了一个基于字典树(Trie)的分词器,可以处理中英文混合文本。
+    主要特点:
+    1. 使用字典树存储词典,支持高效的最大正向/反向匹配
+    2. 支持英文词干提取和词形还原
+    3. 支持繁简转换和全角半角转换
+    4. 提供词频统计功能
+    """
     def key_(self, line):
         return str(line.lower().encode("utf-8"))[2:-1]
 

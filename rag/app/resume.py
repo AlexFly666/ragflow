@@ -31,7 +31,11 @@ forbidden_select_fields4resume = [
     "name_pinyin_kwd", "edu_first_fea_kwd", "degree_kwd", "sch_rank_kwd", "edu_fea_kwd"
 ]
 
-
+# 主要功能:处理简历文档
+# - 提取简历关键信息(教育、工作经验等)
+# - 标准化简历字段
+# - 支持多种简历格式
+# - 提供结构化输出
 def remote_call(filename, binary):
     q = {
         "header": {

@@ -26,7 +26,12 @@ from rag.nlp import bullets_category, is_english,remove_contents_table, \
 from rag.nlp import rag_tokenizer
 from deepdoc.parser import PdfParser, DocxParser, PlainParser, HtmlParser
 
-
+# 主要功能:处理各种格式的书籍文档(PDF、DOCX等)
+# - 支持目录结构识别
+# - 智能分章节
+# - 处理图表
+# - 支持多种文档格式(PDF、DOCX、TXT等)
+# - 提供分块策略以保持文档语义完整性
 class Pdf(PdfParser):
     def __call__(self, filename, binary=None, from_page=0,
                  to_page=100000, zoomin=3, callback=None):

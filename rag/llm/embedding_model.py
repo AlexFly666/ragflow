@@ -13,6 +13,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+"""
+文本向量嵌入模型实现
+主要功能:
+1. 将文本转换为向量表示
+2. 支持多种嵌入模型:
+   - OpenAI Embedding
+   - BGE Embedding 
+   - Cohere等
+3. 核心方法:
+   - encode(): 批量文本向量化
+   - encode_queries(): 单条查询向量化
+4. 处理文本截断、批处理等
+"""
 import logging
 import re
 import threading

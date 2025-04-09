@@ -1,37 +1,5 @@
-<div align="center">
-<a href="https://demo.ragflow.io/">
-<img src="web/src/assets/logo-with-text.png" width="350" alt="ragflow logo">
-</a>
-</div>
 
-
-<p align="center">
-    <a href="https://x.com/intent/follow?screen_name=infiniflowai" target="_blank">
-        <img src="https://img.shields.io/twitter/follow/infiniflow?logo=X&color=%20%23f5f5f5" alt="follow on X(Twitter)">
-    </a>
-    <a href="https://demo.ragflow.io" target="_blank">
-        <img alt="Static Badge" src="https://img.shields.io/badge/Online-Demo-4e6b99">
-    </a>
-    <a href="https://hub.docker.com/r/infiniflow/ragflow" target="_blank">
-        <img src="https://img.shields.io/badge/docker_pull-ragflow:v0.17.2-brightgreen" alt="docker pull infiniflow/ragflow:v0.17.2">
-    </a>
-    <a href="https://github.com/infiniflow/ragflow/releases/latest">
-        <img src="https://img.shields.io/github/v/release/infiniflow/ragflow?color=blue&label=Latest%20Release" alt="Latest Release">
-    </a>
-    <a href="https://github.com/infiniflow/ragflow/blob/main/LICENSE">
-        <img height="21" src="https://img.shields.io/badge/License-Apache--2.0-ffffff?labelColor=d4eaf7&color=2e6cc4" alt="license">
-    </a>
-</p>
-
-<h4 align="center">
-  <a href="https://ragflow.io/docs/dev/">Document</a> |
-  <a href="https://github.com/infiniflow/ragflow/issues/4214">Roadmap</a> |
-  <a href="https://twitter.com/infiniflowai">Twitter</a> |
-  <a href="https://discord.gg/zd4qPW6t">Discord</a> |
-  <a href="https://demo.ragflow.io">Demo</a>
-</h4>
-
-## 💡 RAGFlow 是什么？
+##  RAGFlow 是什么？
 
 [RAGFlow](https://ragflow.io/) 是一款基于深度文档理解构建的开源 RAG（Retrieval-Augmented Generation）引擎。RAGFlow 可以为各种规模的企业及个人提供一套精简的 RAG 工作流程，结合大语言模型（LLM）针对用户各类不同的复杂格式数据提供可靠的问答以及有理有据的引用。
 
@@ -261,7 +229,7 @@ RAG（Retrieval-Augmented Generation，检索增强生成）是一种结合了�
 
 ```
 ├─rag                     # RAG检索增强生成的核心实现
-│  ├─app                 # 应用层逻辑，处理用户请求
+│  ├─app                 # 专门用于处理各种类型的文档
 │  ├─llm                 # 大语言模型集成（如OpenAI、Claude等）
 │  │  └─[各种模型适配器] # 支持多种LLM模型的适配器
 │  ├─nlp                 # 自然语言处理组件
@@ -280,9 +248,90 @@ RAG（Retrieval-Augmented Generation，检索增强生成）是一种结合了�
 
 **RAG模块是整个系统的核心**，负责将用户的查询与知识库中的相关内容匹配，并通过LLM生成回答。初级开发者应关注：
 
+- `app/`: 专门用于处理各种类型的文档
+
+  - 文档处理：支持多种文档格式（PDF、Word、Excel等）的解析和信息提取
+  - 特定领域处理：针对不同类型的文档（论文、法律文书、简历等）提供专门的处理逻辑
+  - 多媒体支持：包含图片、表格、音频等多媒体内容的处理能力
+  - 问答系统：实现基于文档内容的智能问答功能
+
 - `llm/`: 了解如何集成不同的大语言模型
+
+  ```bash
+  ├── __init__.py          # 模块初始化文件,导出所有模型类
+  ├── chat_model.py        # 聊天模型实现
+  ├── cv_model.py          # 计算机视觉模型实现  
+  ├── embedding_model.py   # 向量嵌入模型实现
+  ├── rerank_model.py      # 重排序模型实现
+  ├── sequence2txt_model.py # 语音转文本模型实现
+  └── tts_model.py         # 文本转语音模型实现
+  ```
+  
 - `nlp/`: 学习文本如何被处理成向量以便检索
+
+  ```bash
+  rag_tokenizer.py (分词器)
+      ↑
+      ├── term_weight.py (词项权重)
+      ├── synonym.py (同义词处理)
+      ├── surname.py (中文姓氏识别)
+      └── query.py (查询处理)
+           ↑
+           └── search.py (搜索实现)
+  ```
+
+  a) 文档处理流程：
+  - 文档输入 → 分词(rag_tokenizer) → 词项权重计算(term_weight) → 索引存储
+
+  b) 查询处理流程：
+  - 用户查询 → 查询预处理(query) → 分词(rag_tokenizer) → 同义词扩展(synonym) 
+  - → 混合搜索(search) → 结果重排序 → 返回结果
+
+  3. 各模块主要职责：
+
+  - `rag_tokenizer.py`: 
+    - 基础分词功能
+    - 中英文混合分词
+    - 词典管理
+    - 词频统计
+
+  - `query.py`:
+    - 查询预处理
+    - 查询分析
+    - 查询权重计算
+    - 混合相似度计算
+
+  - `search.py`:
+    - 混合搜索实现
+    - 结果重排序
+    - 标签系统
+    - 文档聚合
+
+  - `term_weight.py`:
+    - 停用词过滤
+    - TF-IDF计算
+    - 命名实体识别
+    - 词性权重
+
+  - `synonym.py`:
+    - 同义词管理
+    - WordNet集成
+    - 缓存支持
+
+  4. 技术特点：
+
+  - 采用混合检索策略(文本+向量)
+  - 支持中英文混合处理
+  - 基于字典树的高效分词
+  - 可扩展的词典系统
+  - 灵活的权重调整机制
+  - 分布式缓存支持
+
+  这个RAG系统的NLP模块设计合理，模块化程度高，各组件之间职责明确，便于维护和扩展。同时通过混合检索策略提高了检索效果，通过缓存机制提升了系统性能。
+
 - `svr/`: 理解检索逻辑的核心实现
+
+  
 
 #### 2. 智能代理模块 (agent/)
 

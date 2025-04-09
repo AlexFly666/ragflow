@@ -13,7 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
+# 主要功能:处理电子邮件文档
+# - 解析邮件标题、正文、附件
+# - 保持邮件会话上下文
+# - 支持多种邮件格式(.eml等)
+# - 处理邮件中的富文本内容
 import logging
 from email import policy
 from email.parser import BytesParser
