@@ -20,7 +20,7 @@ RAGflow是一个开源的RAG（检索增强生成）引擎，基于深度文档�
 
 ### 1.2 基于深度文档理解的工作原理
 
-RAGflow的核心是DeepDoc引擎，它能够理解文档的语义、结构和布局，从而更准确地提取知识。DeepDoc包含以下关键技术：
+RAGflow的核心是[DeepDoc](https://github.com/infiniflow/ragflow/blob/main/deepdoc/README_zh.md)引擎，它能够理解文档的语义、结构和布局，从而更准确地提取知识。DeepDoc包含以下关键技术：
 
 - **OCR技术**：能够从图像或PDF中精确提取文本
 - **布局识别**：识别文档中的标题、正文、表格、图片等不同元素
@@ -189,19 +189,23 @@ GPU加速主要用于以下任务：
    
    # 安装uv包管理工具
    pipx install uv
+   export UV_INDEX=https://mirrors.aliyun.com/pypi/simple
+   # uv命令生效
+   pipx ensurepath
    
    # 安装Python依赖
-   uv sync --python 3.10  # 精简版
-   # 或
    uv sync --python 3.10 --all-extras  # 完整版
    ```
 
 2. 启动第三方服务：
    ```bash
-   docker compose -f docker/docker-compose-base.yml up -d
+   docker-compose -f docker/docker-compose-base.yml up -d --force-recreate
    ```
 
 3. 更新hosts文件：
+
+   > 在 `/etc/hosts` 中添加以下代码，将 **conf/service_conf.yaml** 文件中的所有 host 地址都解析为 `127.0.0.1`
+
    ```bash
    # 添加到/etc/hosts
    127.0.0.1 es01 infinity mysql minio redis
@@ -216,16 +220,15 @@ GPU加速主要用于以下任务：
    export HF_ENDPOINT=https://hf-mirror.com
    
    # 启动后端服务
-   JEMALLOC_PATH=$(pkg-config --variable=libdir jemalloc)/libjemalloc.so
-   LD_PRELOAD=$JEMALLOC_PATH python rag/svr/task_executor.py 1
-   python api/ragflow_server.py
+   bash docker/launch_backend_service.sh
    ```
 
 5. 启动前端服务：
    ```bash
    cd web
+   apt install npm
    npm install
-   # 更新.umirc.ts中的proxy.target为http://127.0.0.1:9380
+   # 更新.umirc.ts中的proxy.target为自己的后端地址，如http://127.0.0.1:9380
    npm run dev
    ```
 
@@ -233,72 +236,230 @@ GPU加速主要用于以下任务：
 
 ## 4. 系统配置与自定义
 
-### 4.1 环境变量配置（.env文件）
+### 4.1 依赖组件环境变量配置（.env文件）
 
-RAGflow使用.env文件来管理环境变量，主要配置项包括：
+RAGflow使用`docker/.env`文件来管理环境变量，主要配置项包括：
 
-```
-# 基础配置
-SVR_HTTP_PORT=80
-DATA_DIR=/data
-EMBEDDING_GPU=false
+```bash
+# 文档引擎类型
+# 可用选项：
+# - `elasticsearch` (默认) 
+# - `infinity` (https://github.com/infiniflow/infinity)
+DOC_ENGINE=${DOC_ENGINE:-elasticsearch}
 
-# MySQL配置
-MYSQL_USER=ragsearch
-MYSQL_PASSWORD=ragsearch123
-MYSQL_DATABASE=ragsearch
+# ------------------------------
+# docker 环境变量，用于在启动时指定向量数据库类型
+# (基于向量数据库类型，将使用相应的 docker compose 配置)
+# COMPOSE_PROFILES 是 Docker Compose 提供的一个环境变量，
+# 用于在运行 docker-compose up 命令时自动激活指定的配置文件 (profiles)。
+# ------------------------------
+COMPOSE_PROFILES=${DOC_ENGINE}
+
+# Elasticsearch 版本
+STACK_VERSION=8.11.3
+
+# Elasticsearch 服务暴露的主机名
+ES_HOST=es01
+
+# 用于将 Elasticsearch 服务暴露给主机的端口，
+# 允许从外部访问 Docker 容器内运行的服务
+ES_PORT=1200
+
+# Elasticsearch 密码
+ELASTIC_PASSWORD=infini_rag_flow
+
+# 用于将 Kibana 服务暴露给主机的端口，
+# 允许从外部访问 Docker 容器内运行的服务
+KIBANA_PORT=6601
+KIBANA_USER=rag_flow
+KIBANA_PASSWORD=infini_rag_flow
+
+# Docker 容器运行时可以使用的最大内存量（以字节为单位）
+# 根据主机可用内存更新此值
+# MEM_LIMIT=8073741824
+MEM_LIMIT=2147483648
+
+# Infinity 服务暴露的主机名
+INFINITY_HOST=infinity
+
+# 将 Infinity API 暴露给主机的端口
+INFINITY_THRIFT_PORT=23817
+INFINITY_HTTP_PORT=23820
+INFINITY_PSQL_PORT=5432
+
+# MySQL 密码
+MYSQL_PASSWORD=infini_rag_flow
+# MySQL 服务暴露的主机名
+MYSQL_HOST=mysql
+# 要使用的 MySQL 服务数据库
+MYSQL_DBNAME=rag_flow
+# 用于将 MySQL 服务暴露给主机的端口，
+# 允许从外部访问 Docker 容器内运行的 MySQL 数据库
 MYSQL_PORT=5455
 
-# Elasticsearch配置
-ES_PORT=1200
-ES_PASSWORD=ragsearch123
-
-# MinIO配置
-MINIO_ROOT_USER=ragflow
-MINIO_ROOT_PASSWORD=ragflow123
+# MinIO 服务暴露的主机名
+MINIO_HOST=minio
+# 用于将 MinIO 控制台界面暴露给主机的端口，
+# 允许从外部访问 Docker 容器内运行的基于 Web 的控制台
+MINIO_CONSOLE_PORT=9001
+# 用于将 MinIO API 服务暴露给主机的端口，
+# 允许从外部访问 Docker 容器内运行的 MinIO 对象存储服务
 MINIO_PORT=9000
+# MinIO 用户名
+# 更新时，必须相应修改 service_conf.yaml 中的 `minio.user` 条目
+MINIO_USER=rag_flow
+# MinIO 密码
+# 更新时，必须相应修改 service_conf.yaml 中的 `minio.password` 条目
+MINIO_PASSWORD=infini_rag_flow
+
+# Redis 服务暴露的主机名
+REDIS_HOST=redis
+# 用于将 Redis 服务暴露给主机的端口，
+# 允许从外部访问 Docker 容器内运行的 Redis 服务
+REDIS_PORT=6379
+# Redis 密码
+REDIS_PASSWORD=infini_rag_flow
+
+# 用于将 RAGFlow 的 HTTP API 服务暴露给主机的端口，
+# 允许从外部访问 Docker 容器内运行的服务
+SVR_HTTP_PORT=9380
+
+# 要下载的 RAGFlow Docker 镜像
+# 默认为 v0.17.2-slim 版本，这是不包含嵌入模型的 RAGFlow Docker 镜像
+RAGFLOW_IMAGE=infiniflow/ragflow:v0.17.2-slim
+#
+# 要下载包含嵌入模型的 RAGFlow Docker 镜像，请取消注释以下行：
+# RAGFLOW_IMAGE=infiniflow/ragflow:v0.17.2
+# 
+# v0.17.2 版本的 Docker 镜像包含：
+# - 内置嵌入模型：
+#   - BAAI/bge-large-zh-v1.5
+#   - BAAI/bge-reranker-v2-m3
+#   - maidalun1020/bce-embedding-base_v1
+#   - maidalun1020/bce-reranker-base_v1
+# - 在 RAGFlow UI 中选择后将下载的嵌入模型：
+#   - BAAI/bge-base-en-v1.5
+#   - BAAI/bge-large-en-v1.5
+#   - BAAI/bge-small-en-v1.5
+#   - BAAI/bge-small-zh-v1.5
+#   - jinaai/jina-embeddings-v2-base-en
+#   - jinaai/jina-embeddings-v2-small-en
+#   - nomic-ai/nomic-embed-text-v1.5
+#   - sentence-transformers/all-MiniLM-L6-v2
+
+# 如果无法下载 RAGFlow Docker 镜像：
+#
+# - 对于 `nightly-slim` 版本，取消注释以下任一行：
+# RAGFLOW_IMAGE=swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow:nightly-slim
+# RAGFLOW_IMAGE=registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow:nightly-slim
+#
+# - 对于 `nightly` 版本，取消注释以下任一行：
+# RAGFLOW_IMAGE=swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow:nightly
+# RAGFLOW_IMAGE=registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow:nightly
+
+# 本地时区
+TIMEZONE='Asia/Shanghai'
+
+# 如果您访问 huggingface.co 受限，请取消注释以下行：
+# HF_ENDPOINT=https://hf-mirror.com
+
+# MacOS 的优化设置
+# 如果您的操作系统是 MacOS，请取消注释以下行：
+# MACOS=1
+
+# 知识库或文件管理中每次上传的最大文件大小限制（以字节为单位）
+# 要更改 1GB 的文件大小限制，请取消注释下面的行并根据需要更新
+# MAX_CONTENT_LENGTH=1073741824
+# 更新后，确保相应更新 nginx/nginx.conf 中的 `client_max_body_size`
+# 注意，`MAX_CONTENT_LENGTH` 和 `client_max_body_size` 都不会设置上传到代理的文件的最大大小
+# 详见 https://ragflow.io/docs/dev/begin_component
+
+# RAGFlow 自有包和导入包的日志级别
+# 可用级别：
+# - `DEBUG`
+# - `INFO`（默认）
+# - `WARNING`
+# - `ERROR`
+# 例如，以下行将 `ragflow.es_conn` 的日志级别更改为 `DEBUG`：
+# LOG_LEVELS=ragflow.es_conn=DEBUG
+
+# 阿里云 OSS 配置
+# STORAGE_IMPL=OSS
+# ACCESS_KEY=xxx
+# SECRET_KEY=eee
+# ENDPOINT=http://oss-cn-hangzhou.aliyuncs.com
+# REGION=cn-hangzhou
+# BUCKET=ragflow65536
+
+# 用户注册开关
+REGISTER_ENABLED=1
+
 ```
 
 这些变量会在启动容器时被加载，影响系统的基本行为。
 
-### 4.2 服务配置（service_conf.yaml）
+### 4.2 服务配置（`conf/service_conf.yaml`）
 
-service_conf.yaml是RAGflow的核心配置文件，定义了后端服务的行为：
+`conf/service_conf.yaml`是RAGflow的核心配置文件，定义了后端服务的行为：
 
 ```yaml
-# LLM设置
-user_default_llm:
-  factory: openai  # 可选：openai, azure, siliconflow等
-  model: gpt-3.5-turbo-16k  # 模型名称
-  api_key: ${OPENAI_API_KEY}  # 使用环境变量中的API密钥
+# RAGFlow 服务配置
+ragflow:
+  # 服务监听地址
+  host: 0.0.0.0
+  # HTTP 服务端口
+  http_port: 9380
 
-# 嵌入模型设置
-embedding_models:
-  - name: bge-large-en-v1.5
-    local: true
-    device: cpu  # 或gpu
-  
-# 存储设置
-object_storage: minio  # 对象存储类型
-minio_info:
-  endpoint: http://minio:9000
-  access_key: ${MINIO_ROOT_USER}
-  secret_key: ${MINIO_ROOT_PASSWORD}
+# MySQL 数据库配置
+mysql:
+  # 数据库名称
+  name: 'rag_flow'
+  # 数据库用户名
+  user: 'root'
+  # 数据库密码
+  password: 'infini_rag_flow'
+  # 数据库主机地址
+  host: 'localhost'
+  # 数据库端口
+  port: 5455
+  # 最大连接数
+  max_connections: 100
+  # 连接超时时间（秒）
+  stale_timeout: 30
 
-# 数据库设置
-db_info:
-  host: mysql
-  port: 3306
-  user: ${MYSQL_USER}
-  password: ${MYSQL_PASSWORD}
-  database: ${MYSQL_DATABASE}
+# MinIO 对象存储配置
+minio:
+  # MinIO 用户名
+  user: 'rag_flow'
+  # MinIO 密码
+  password: 'infini_rag_flow'
+  # MinIO 服务地址
+  host: 'localhost:9000'
 
-# Elasticsearch设置
-es_info:
-  host: es01
-  port: 9200
-  user: elastic
-  password: ${ES_PASSWORD}
+# Elasticsearch 配置
+es:
+  # ES 服务地址
+  hosts: 'http://localhost:1200'
+  # ES 用户名
+  username: 'elastic'
+  # ES 密码
+  password: 'infini_rag_flow'
+
+# Infinity 向量数据库配置
+infinity:
+  # Infinity 服务地址
+  uri: 'localhost:23817'
+  # 默认数据库名称
+  db_name: 'default_db'
+
+# Redis 缓存配置
+redis:
+  # Redis 数据库索引
+  db: 1
+  # Redis 密码
+  password: 'infini_rag_flow'
+  # Redis 服务地址
+  host: 'localhost:6379'
 ```
 
 修改此文件可以自定义RAGflow的各种行为，如使用不同的LLM、嵌入模型或存储方式。

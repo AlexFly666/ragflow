@@ -1,30 +1,62 @@
+# RAGFlow 服务配置
 ragflow:
+  # 服务监听地址
   host: 0.0.0.0
+  # HTTP 服务端口
   http_port: 9380
+
+# MySQL 数据库配置
 mysql:
+  # 数据库名称
   name: 'rag_flow'
+  # 数据库用户名
   user: 'root'
+  # 数据库密码
   password: 'infini_rag_flow'
+  # 数据库主机地址
   host: 'localhost'
+  # 数据库端口
   port: 5455
+  # 最大连接数
   max_connections: 100
+  # 连接超时时间（秒）
   stale_timeout: 30
+
+# MinIO 对象存储配置
 minio:
+  # MinIO 用户名
   user: 'rag_flow'
+  # MinIO 密码
   password: 'infini_rag_flow'
+  # MinIO 服务地址
   host: 'localhost:9000'
+
+# Elasticsearch 配置
 es:
+  # ES 服务地址
   hosts: 'http://localhost:1200'
+  # ES 用户名
   username: 'elastic'
+  # ES 密码
   password: 'infini_rag_flow'
+
+# Infinity 向量数据库配置
 infinity:
+  # Infinity 服务地址
   uri: 'localhost:23817'
+  # 默认数据库名称
   db_name: 'default_db'
+
+# Redis 缓存配置
 redis:
+  # Redis 数据库索引
   db: 1
+  # Redis 密码
   password: 'infini_rag_flow'
+  # Redis 服务地址
   host: 'localhost:6379'
 
+# PostgreSQL 数据库配置（已注释）
 # postgres:
 #   name: 'rag_flow'
 #   user: 'rag_flow'
@@ -33,20 +65,28 @@ redis:
 #   port: 5432
 #   max_connections: 100
 #   stale_timeout: 30
+
+# S3 对象存储配置（已注释）
 # s3:
 #   access_key: 'access_key'
 #   secret_key: 'secret_key'
 #   region: 'region'
+
+# 阿里云 OSS 配置（已注释）
 # oss:
 #   access_key: 'access_key'
 #   secret_key: 'secret_key'
 #   endpoint_url: 'http://oss-cn-hangzhou.aliyuncs.com'
 #   region: 'cn-hangzhou'
 #   bucket: 'bucket_name'
+
+# Azure Blob 存储配置 - SAS 认证方式（已注释）
 # azure:
 #   auth_type: 'sas'
 #   container_url: 'container_url'
 #   sas_token: 'sas_token'
+
+# Azure Blob 存储配置 - 服务主体认证方式（已注释）
 # azure:
 #   auth_type: 'spn'
 #   account_url: 'account_url'
@@ -54,10 +94,14 @@ redis:
 #   secret: 'secret'
 #   tenant_id: 'tenant_id'
 #   container_name: 'container_name'
+
+# 用户默认 LLM 配置（已注释）
 # user_default_llm:
 #   factory: 'Tongyi-Qianwen'
 #   api_key: 'sk-xxxxxxxxxxxxx'
 #   base_url: ''
+
+# OAuth 认证配置（已注释）
 # oauth:
 #   github:
 #     client_id: xxxxxxxxxxxxxxxxxxxxxxxxx
@@ -69,6 +113,8 @@ redis:
 #     app_access_token_url: https://open.feishu.cn/open-apis/auth/v3/app_access_token/internal
 #     user_access_token_url: https://open.feishu.cn/open-apis/authen/v1/oidc/access_token
 #     grant_type: 'authorization_code'
+
+# 认证配置（已注释）
 # authentication:
 #   client:
 #     switch: false
@@ -76,6 +122,8 @@ redis:
 #     http_secret_key:
 #   site:
 #     switch: false
+
+# 权限配置（已注释）
 # permission:
 #   switch: false
 #   component: false
