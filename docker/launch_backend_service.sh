@@ -101,6 +101,12 @@ task_exe(){
     while ! $STOP && [ $retry_count -lt $MAX_RETRIES ]; do
         echo "Starting task_executor.py for task $task_id (Attempt $((retry_count+1)))"
         # 使用 jemalloc 内存分配器启动任务执行器
+        # jemalloc 是一个高性能的内存分配器，相比标准的 glibc malloc：
+        # 1. 减少内存碎片：更高效地管理内存分配和释放
+        # 2. 提高并发性能：针对多线程应用优化，减少锁竞争
+        # 3. 降低内存占用：更紧凑的内存管理，减少内存浪费
+        # 4. 提供更好的性能：特别是在高负载和大规模内存操作场景
+        # 通过 LD_PRELOAD 环境变量，使 jemalloc 替代系统默认的内存分配器
         LD_PRELOAD=$JEMALLOC_PATH $PY rag/svr/task_executor.py "$task_id"
         EXIT_CODE=$?
         if [ $EXIT_CODE -eq 0 ]; then

@@ -256,29 +256,64 @@ class RedisDB:
         return None
 
     def get_unacked_iterator(self, queue_names: list[str], group_name, consumer_name):
+        """
+        获取未确认消息的迭代器，用于处理之前获取但未确认完成的消息
+        
+        参数:
+            queue_names: 需要检查的队列名称列表
+            group_name: 消费者组名称
+            consumer_name: 消费者名称
+            
+        工作流程:
+            1. 遍历所有队列
+               - 检查队列是否存在
+               - 验证消费者组是否存在
+            2. 获取未确认消息
+               - 从最小ID开始获取消息
+               - 每获取一条消息更新当前最小ID
+            3. 异常处理
+               - 捕获并记录异常
+               - 重新连接Redis
+               
+        返回:
+            generator: 生成器对象，每次迭代返回一个未确认的消息
+        """
         try:
+            # 遍历所有队列名称
             for queue_name in queue_names:
                 try:
+                    # 获取队列的消费者组信息
                     group_info = self.REDIS.xinfo_groups(queue_name)
                 except Exception as e:
+                    # 如果队列不存在，记录警告并继续下一个队列
                     if str(e) == 'no such key':
                         logging.warning(f"RedisDB.get_unacked_iterator queue {queue_name} doesn't exist")
                         continue
+                # 检查指定的消费者组是否存在于当前队列
                 if not any(gi["name"] == group_name for gi in group_info):
                     logging.warning(f"RedisDB.get_unacked_iterator queue {queue_name} group {group_name} doesn't exist")
                     continue
+                
+                # 从ID 0开始获取未确认的消息
                 current_min = 0
                 while True:
+                    # 尝试获取一条未确认的消息
                     payload = self.queue_consumer(queue_name, group_name, consumer_name, current_min)
+                    # 如果没有更多未确认消息，跳出循环
                     if not payload:
                         break
+                    # 更新当前最小ID为刚获取的消息ID
                     current_min = payload.get_msg_id()
+                    # 记录获取到的未确认消息信息
                     logging.info(f"RedisDB.get_unacked_iterator {queue_name} {consumer_name} {current_min}")
+                    # 返回获取到的消息对象
                     yield payload
         except Exception:
+            # 捕获并记录任何异常
             logging.exception(
                 "RedisDB.get_unacked_iterator got exception: "
             )
+            # 重新连接Redis
             self.__open__()
 
     def queue_info(self, queue, group_name) -> dict | None:
