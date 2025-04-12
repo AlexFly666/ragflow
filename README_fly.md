@@ -1,54 +1,284 @@
 
-##  RAGFlow 是什么？
+#  RAGFlow入门
 
 [RAGFlow](https://ragflow.io/) 是一款基于深度文档理解构建的开源 RAG（Retrieval-Augmented Generation）引擎。RAGFlow 可以为各种规模的企业及个人提供一套精简的 RAG 工作流程，结合大语言模型（LLM）针对用户各类不同的复杂格式数据提供可靠的问答以及有理有据的引用。
 
+## 1.核心能力
 
-## 🔥 近期更新
+### 1. 智能文档处理系统
 
-- 2025-02-28 结合互联网搜索（Tavily），对于任意大模型实现类似 Deep Research 的推理功能.
-- 2025-02-05 更新硅基流动的模型列表，增加了对 Deepseek-R1/DeepSeek-V3 的支持。
-- 2025-01-26 优化知识图谱的提取和应用，提供了多种配置选择。
-- 2024-12-18 升级了 DeepDoc 的文档布局分析模型。
-- 2024-12-04 支持知识库的 Pagerank 分数。
-- 2024-11-22 完善了 Agent 中的变量定义和使用。
-- 2024-11-01 对解析后的 chunk 加入关键词抽取和相关问题生成以提高召回的准确度。
-- 2024-08-22 支持用 RAG 技术实现从自然语言到 SQL 语句的转换。
+**核心价值：** 解决"垃圾进垃圾出"问题，实现"质量输入，质量输出"
+
+- **深度文档解析**：超越普通文本提取，能够识别并解析文档中的图像、表格和复杂结构
+
+  > 基于[深度文档理解](./deepdoc/README.md)，能够从各类复杂格式的非结构化数据中提取真知灼见。
+  >
+  > 使用 DeepDoc 解析 PDF 或其他文件的示例？参阅 **rag/app** 文件夹下的 Python 文件。
+
+- **多格式支持**：支持丰富的文件类型，包括 Word 文档、PPT、excel 表格、txt 文件、图片、PDF、影印件、复印件、结构化数据、网页等，适应企业多样化数据
+
+- **模板化分块策略**：采用语义感知的分块方法，保留文档结构和上下文关系
+
+- **文本切片可视化**：多种文本模板可供选择，文本切片过程可视化，支持手动调整
+
+### 2. 高可靠知识检索框架
+
+**核心价值：** 大幅减少AI回答中的"幻觉"问题
+
+- **多路召回机制**：结合多种检索策略，提高知识覆盖面
+- **融合重排序技术**：优化检索结果的相关性排序
+- **可视化知识溯源**：提供答案的关键引用快照和原始来源链接
+- **透明的检索过程**：用户可查看系统如何筛选和利用知识
+
+### 3. 灵活的模型应用架构
+
+**核心价值：** 适应不同场景需求，提供定制化能力
+
+- **模型灵活配置**：支持多种大语言模型和向量模型的配置和切换
+- **参数化控制**：提供细粒度的模型参数调整能力
+- **自定义提示工程**：支持针对特定应用场景的提示词优化
+- **智能体扩展**：通过可配置的智能体实现复杂任务处理
+
+### 4. 企业级协作与集成平台
+
+**核心价值：** 从个人应用到企业级系统的无缝扩展
+
+- **团队协作机制**：支持多角色协作，包括管理员、编辑者和查看者权限体系
+- **系统健康管理**：提供版本升级和系统诊断功能
+- **API接口生态**：标准化API设计便于与企业现有系统集成
+- **安全与合规**：注重数据安全和访问控制
+
+### 5. 完整RAG工作流
+
+**核心价值：** 提供端到端的RAG应用构建体验
+
+- **自动化处理管道**：从文档上传、处理到检索生成的完整流程
+- **交互式调优**：支持人工干预和调整各环节参数
+- **可视化监控**：直观展示处理状态和系统性能
+- **场景适配能力**：适用于知识密集型、需要高可信度的专业领域应用
+
+## 2. 主要功能
+
+### 1. 数据集管理
+
+数据集是 RAG（检索增强生成）应用的基础，用于存储和管理知识库内容。
+
+- 文件上传：支持多种格式文件上传（PDF、docx、txt等）
+
+- 文件处理：自动进行文本提取、分块和向量化
+
+- 文件组织：可以创建文件夹进行分类管理
+
+- 批量操作：支持批量上传和管理文件
+
+### 2. 搜索/聊天功能
+
+聊天是 RAG 应用的核心交互方式，让用户可以基于知识库进行问答。
+
+- 知识库聊天：基于上传的数据集进行问答交互
+
+- 多轮对话：支持上下文理解和多轮对话
+
+- 实时应答：系统会实时从知识库中检索相关信息进行回答
+
+#### AI 搜索和聊天的主要区别是什么？
+
+- **AI 搜索**：这是使用**预定义检索策略**（加权关键词相似度和加权向量相似度的混合搜索）和系统默认聊天模型的单轮 AI 对话。它不涉及知识图谱、自动关键词或自动问题等高级 RAG 策略。**检索到的文本块将列在聊天模型响应的下方**。
+- **AI 聊天**：这是多轮 AI 对话，您可以**定义检索策略**（在混合搜索中可以使用加权重排序分数替代加权向量相似度）并选择聊天模型。在 AI 聊天中，您可以为特定案例配置高级 RAG 策略，如知识图谱、自动关键词和自动问题。**检索到的文本块不会与答案一起显示。**
+
+在调试聊天助手时，您可以使用 AI 搜索作为参考来验证模型设置和检索策略。
+
+### 3. 模型管理
+
+模型是 RAG 系统的核心组件，负责理解用户问题和生成回答。RagFlow 支持多种模型管理功能：
+
+- 多模型支持：支持主流大语言模型（如GPT系列、Claude系列等）
+
+- 模型配置：可以配置模型参数如温度、最大生成长度等
+
+- 自定义提示词：可以设定系统提示以优化模型行为
+
+#### 支持更多模型
+
+##### 如何使用本地部署的 LLM 运行 RAGFlow？
+
+您可以使用 Ollama 或 Xinference 来部署本地 LLM。请参阅`docs/guides/models/deploy_local_llm.mdx`了解更多信息。
+
+------
+
+##### 如何添加不支持的 LLM？
+
+如果您的模型目前不受支持但具有与 OpenAI 兼容的 API，请在**模型提供商**页面上点击 **OpenAI-API-Compatible** 来配置您的模型：
+
+![openai-api-compatible](https://github.com/user-attachments/assets/b1e964f2-b86e-41af-8528-fd8a96dc5f6f)
+
+------
+
+##### 如何将 RAGFlow 与 Ollama 互联？
+
+- 如果 RAGFlow 是本地部署的，请确保您的 RAGFlow 和 Ollama 在同一局域网中。
+- 如果您使用我们的在线演示，请确保您的 Ollama 服务器的 IP 地址是公开且可访问的。
+
+请参阅`docs/guides/models/deploy_local_llm.mdx`了解更多信息。
+
+### 4. 智能体管理
+
+智能体是能够执行特定任务的自动化组件，可增强RAG系统的功能。
+
+- 任务自动化：智能体可以执行特定任务，如信息检索、数据处理等
+
+- 工具集成：可以集成各种工具扩展智能体能力
+
+- 自定义行为：可以通过提示词和配置自定义智能体行为
+
+### 5. 系统管理
+
+#### 团队成员管理
+
+RagFlow 提供了完善的团队协作功能：
+
+- 成员邀请：通过邮件邀请新成员加入
+
+- 角色管理：支持管理员、编辑者、查看者三种角色
+
+- 权限控制：基于角色的细粒度权限管理
+
+#### 系统升级与健康检查
+
+根据 upgrade_ragflow.mdx 和 run_health_check.md 文档：
+
+- 版本升级：提供自动升级和手动升级两种方式
+
+- 健康检查：可以运行系统健康检查确保所有组件正常运行
+
+- 问题排查：提供常见问题的排查和解决指南
+
+## 3.以Docker镜像启动服务
+
+### 📝 前提条件
+
+- CPU >= 4 核
+- RAM >= 16 GB
+- Disk >= 50 GB
+- Docker >= 24.0.0 & Docker Compose >= v2.26.1
+  > 如果你并没有在本机安装 Docker（Windows、Mac，或者 Linux）, 可以参考文档 [Install Docker Engine](https://docs.docker.com/engine/install/) 自行安装。
+
+### 🚀 启动服务器
+
+1. 确保 `vm.max_map_count` 不小于 262144：
+
+   > - **`max_map_count`**:  这是一个内核参数，用于限制一个进程可以拥有的 **内存映射区域 (memory map areas)** 的最大数量。
+   >
+   > **什么是内存映射区域？**
+   >
+   > 内存映射是一种将文件或设备的内容直接映射到进程的虚拟地址空间的技术。这使得进程可以像访问内存一样访问文件或设备的内容，而无需进行显式的读写操作。
+
+   > 如需确认 `vm.max_map_count` 的大小：
+   >
+   > ```bash
+   > $ sysctl vm.max_map_count
+   > ```
+   >
+   > 如果 `vm.max_map_count` 的值小于 262144，可以进行重置：
+   >
+   > ```bash
+   > # 这里我们设为 262144:
+   > $ sudo sysctl -w vm.max_map_count=262144
+   > ```
+   >
+   > 你的改动会在下次系统重启时被重置。如果希望做永久改动，还需要在 **/etc/sysctl.conf** 文件里把 `vm.max_map_count` 的值再相应更新一遍：
+   >
+   > ```bash
+   > vm.max_map_count=262144
+   > ```
+
+2. 克隆仓库：
+
+   ```bash
+   $ git clone https://github.com/infiniflow/ragflow.git
+   ```
+
+3. 进入 **docker** 文件夹，利用提前编译好的 Docker 镜像启动服务器：
+
+   > 运行以下命令会自动下载 RAGFlow slim Docker 镜像 `v0.17.2-slim`。请参考下表查看不同 Docker 发行版的描述。如需下载不同于 `v0.17.2-slim` 的 Docker 镜像，请在运行 `docker compose` 启动服务之前先更新 **docker/.env** 文件内的 `RAGFLOW_IMAGE` 变量。比如，你可以通过设置 `RAGFLOW_IMAGE=infiniflow/ragflow:v0.17.2` 来下载 RAGFlow 镜像的 `v0.17.2` 完整发行版。
+
+   ```bash
+   $ cd ragflow/docker
+   # Use CPU for embedding and DeepDoc tasks:
+   $ docker compose -f docker-compose.yml up -d
+
+   # To use GPU to accelerate embedding and DeepDoc tasks:
+   # docker compose -f docker-compose-gpu.yml up -d
+   ```
+
+   | RAGFlow image tag | Image size (GB) | Has embedding models? | Stable?                  |
+   | ----------------- | --------------- | --------------------- | ------------------------ |
+   | v0.17.2           | &approx;9       | :heavy_check_mark:    | Stable release           |
+   | v0.17.2-slim      | &approx;2       | ❌                    | Stable release           |
+   | nightly           | &approx;9       | :heavy_check_mark:    | _Unstable_ nightly build |
+   | nightly-slim      | &approx;2       | ❌                     | _Unstable_ nightly build |
+
+   > [!TIP]
+   > 如果你遇到 Docker 镜像拉不下来的问题，可以在 **docker/.env** 文件内根据变量 `RAGFLOW_IMAGE` 的注释提示选择华为云或者阿里云的相应镜像。
+   >
+   > - 华为云镜像名：`swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow`
+   > - 阿里云镜像名：`registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow`
+
+4. 服务器启动成功后再次确认服务器状态：
+
+   ```bash
+   $ docker logs -f ragflow-server
+   ```
+
+   _出现以下界面提示说明服务器启动成功：_
+
+   ```bash
+        ____   ___    ______ ______ __
+       / __ \ /   |  / ____// ____// /____  _      __
+      / /_/ // /| | / / __ / /_   / // __ \| | /| / /
+     / _, _// ___ |/ /_/ // __/  / // /_/ /| |/ |/ /
+    /_/ |_|/_/  |_|\____//_/    /_/ \____/ |__/|__/
+
+    * Running on all addresses (0.0.0.0)
+   ```
+
+   > 如果您在没有看到上面的提示信息出来之前，就尝试登录 RAGFlow，你的浏览器有可能会提示 `network anormal` 或 `网络异常`。
+
+5. 在你的浏览器中输入你的服务器对应的 IP 地址并登录 RAGFlow。
+   > 上面这个例子中，您只需输入 http://IP_OF_YOUR_MACHINE 即可：未改动过配置则无需输入端口（默认的 HTTP 服务端口 80）。
+6. 在 [service_conf.yaml.template](./docker/service_conf.yaml.template) 文件的 `user_default_llm` 栏配置 LLM factory，并在 `API_KEY` 栏填写和你选择的大模型相对应的 API key。
+
+   > 详见 [llm_api_key_setup](https://ragflow.io/docs/dev/llm_api_key_setup)。
 
 
-## 🌟 主要功能
+## 4. 系统配置
 
-### 🍭 **"Quality in, quality out"**
+系统配置涉及以下三份文件：
 
-- 基于[深度文档理解](./deepdoc/README.md)，能够从各类复杂格式的非结构化数据中提取真知灼见。
-- 真正在无限上下文（token）的场景下快速完成大海捞针测试。
+- [./docker/.env](./docker/.env)：存放一些基本的系统环境变量，比如 `SVR_HTTP_PORT`、`MYSQL_PASSWORD`、`MINIO_PASSWORD` 等。
+- [service_conf.yaml.template](./docker/service_conf.yaml.template)：配置各类后台服务。
+- [docker-compose.yml](./docker/docker-compose.yml): 系统依赖该文件完成启动。
 
-### 🍱 **基于模板的文本切片**
+请务必确保 [./docker/.env](./docker/.env) 文件中的变量设置与 [service_conf.yaml.template](./docker/service_conf.yaml.template) 文件中的配置保持一致！
 
-- 不仅仅是智能，更重要的是可控可解释。
-- 多种文本模板可供选择
+如果不能访问镜像站点 hub.docker.com 或者模型站点 huggingface.co，请按照 [./docker/.env](./docker/.env) 注释修改 `RAGFLOW_IMAGE` 和 `HF_ENDPOINT`。
 
-### 🌱 **有理有据、最大程度降低幻觉（hallucination）**
+> [./docker/README](./docker/README.md) 解释了 [service_conf.yaml.template](./docker/service_conf.yaml.template) 用到的环境变量设置和服务配置。
 
-- 文本切片过程可视化，支持手动调整。
-- 有理有据：答案提供关键引用的快照并支持追根溯源。
+如需更新默认的 HTTP 服务端口(80), 可以在 [docker-compose.yml](./docker/docker-compose.yml) 文件中将配置 `80:80` 改为 `<YOUR_SERVING_PORT>:80`。
 
-### 🍔 **兼容各类异构数据源**
+> 所有系统配置都需要通过系统重启生效：
+>
+> ```bash
+> $ docker compose -f docker-compose.yml up -d
+> ```
 
-- 支持丰富的文件类型，包括 Word 文档、PPT、excel 表格、txt 文件、图片、PDF、影印件、复印件、结构化数据、网页等。
-
-### 🛀 **全程无忧、自动化的 RAG 工作流**
-
-- 全面优化的 RAG 工作流可以支持从个人应用乃至超大型企业的各类生态系统。
-- 大语言模型 LLM 以及向量模型均支持配置。
-- 基于多路召回、融合重排序。
-- 提供易用的 API，可以轻松集成到各类企业系统。
-
-## 🔎 系统架构
+## 5. 系统架构
 
 <div align="center" style="margin-top:20px;margin-bottom:20px;">
 <img src="https://github.com/infiniflow/ragflow/assets/12318111/d6ac5664-c237-4200-a7c2-a4a00691b485" width="1000"/>
 </div>
+
 一个典型的RAG(检索增强生成)系统架构。我将使用Mermaid语法重新绘制这个架构图，并详细解释各个组件和数据流向，帮助RAG初级开发人员快速理解整个系统。
 
 ```mermaid
@@ -129,13 +359,16 @@ flowchart TD
 ### 系统组件说明
 
 #### 1. 客户端层
+
 - **用户问题(Questions)**: 用户输入的查询或问题
 - **文档(Documents)**: 用户上传的文档，可能包含各种格式(PDF、Word、图片等)
 
 #### 2. Web层
+
 - **Web服务器(Nginx)**: 处理用户请求，负责静态资源分发和请求转发
 
 #### 3. API服务层
+
 - **API Server**: 系统核心，协调各组件工作
 - **任务分发(Task Dispatch)**: 将文档处理任务分配给相应的处理模块
 - **查询分析(Query Analyze)**: 分析用户查询意图和结构
@@ -144,13 +377,16 @@ flowchart TD
 - **答案生成(Answer)**: 根据检索结果生成最终答案
 
 #### 4. 存储层
+
 - **向量数据库**: 存储文档的向量表示和原文块，支持高效相似度检索
 
 #### 5. 模型层
+
 - **大语言模型(LLMs)**: 用于生成自然语言回答
 - **关键词提取与嵌入(Keyword & Embedding)**: 提取文本关键词并生成向量表示
 
 #### 6. 文档处理层
+
 - **文档解析(Document Parser)**: 解析各种格式的文档
 - **OCR**: 从图像中提取文本
 - **文档布局分析(Document Layout Analyze)**: 理解文档结构
@@ -160,6 +396,7 @@ flowchart TD
 ### 数据流向说明
 
 #### 问题处理流程
+
 1. 用户提交问题
 2. Web服务器接收请求并转发到API服务器
 3. API服务器调用查询分析模块分析问题
@@ -171,6 +408,7 @@ flowchart TD
 9. 答案返回给用户
 
 #### 文档处理流程
+
 1. 用户上传文档
 2. 文档通过Web服务器转发到API服务器
 3. API服务器将文档交给任务分发模块
@@ -182,7 +420,7 @@ flowchart TD
 ### 关键环节解析
 
 1. **多路召回机制**: 不同于单一检索方法，多路召回使用多种策略(关键词匹配、语义相似度、知识图谱等)进行检索，提高召回率
-   
+
 2. **重排序过程**: 对多路召回的结果进行精排，考虑相关性、新鲜度、权威性等多维度因素
 
 3. **向量化与存储**: 文档经过分块、向量化后存储，是高效检索的基础
@@ -200,7 +438,7 @@ flowchart TD
 3. 集成基本的LLM模型实现问答功能
 4. 逐步扩展到复杂文档处理和多路召回
 
-## 🎬 项目结构
+## 6. 项目结构
 
 RAG（Retrieval-Augmented Generation，检索增强生成）是一种结合了检索系统和生成式AI的技术框架。简单来说，它通过以下步骤工作：
 
@@ -208,20 +446,6 @@ RAG（Retrieval-Augmented Generation，检索增强生成）是一种结合了�
 2. 当用户提问时，系统先检索相关信息
 3. 将检索到的信息作为上下文与用户问题一起发送给LLM
 4. LLM基于这些上下文生成更准确的回答
-
-下面让我们详细了解本项目如何实现这一流程。
-
-> 对于RAG初级开发者，推荐按以下顺序学习这个项目：
->
-> 1. 首先了解RAG的基本概念和工作原理
-> 2. 阅读`docs/`下的开发文档和使用指南
-> 3. 熟悉`rag/`模块的核心实现
-> 4. 学习如何通过前端界面操作系统
-> 5. 尝试使用Python SDK与系统交互
-> 6. 进阶学习智能代理和工作流编排
->
-> 通过这种方式，可以逐步掌握从基础RAG到复杂智能代理的全部技能。
->
 
 ### 一、核心业务模块
 
@@ -266,7 +490,7 @@ RAG（Retrieval-Augmented Generation，检索增强生成）是一种结合了�
   ├── sequence2txt_model.py # 语音转文本模型实现
   └── tts_model.py         # 文本转语音模型实现
   ```
-  
+
 - `nlp/`: 学习文本如何被处理成向量以便检索
 
   ```bash
@@ -281,9 +505,11 @@ RAG（Retrieval-Augmented Generation，检索增强生成）是一种结合了�
   ```
 
   a) 文档处理流程：
+
   - 文档输入 → 分词(rag_tokenizer) → 词项权重计算(term_weight) → 索引存储
 
   b) 查询处理流程：
+
   - 用户查询 → 查询预处理(query) → 分词(rag_tokenizer) → 同义词扩展(synonym) 
   - → 混合搜索(search) → 结果重排序 → 返回结果
 
@@ -656,128 +882,18 @@ web/
 - `LICENSE`: 开源许可证
 - `CONTRIBUTING.md`: 贡献指南
 
-## **🏄** 快速开始
+## 7.以源代码启动服务
 
-### 📝 前提条件
+```bash
+#启动后端服务
+docker-compose -f docker/docker-compose-base.yml down
+docker-compose -f docker/docker-compose-base.yml up -d --force-recreate
+bash /root/ragflow/docker/launch_backend_service.sh
 
-- CPU >= 4 核
-- RAM >= 16 GB
-- Disk >= 50 GB
-- Docker >= 24.0.0 & Docker Compose >= v2.26.1
-  > 如果你并没有在本机安装 Docker（Windows、Mac，或者 Linux）, 可以参考文档 [Install Docker Engine](https://docs.docker.com/engine/install/) 自行安装。
-
-### 🚀 启动服务器
-
-1. 确保 `vm.max_map_count` 不小于 262144：
-
-   > - **`max_map_count`**:  这是一个内核参数，用于限制一个进程可以拥有的 **内存映射区域 (memory map areas)** 的最大数量。
-   >
-   > **什么是内存映射区域？**
-   >
-   > 内存映射是一种将文件或设备的内容直接映射到进程的虚拟地址空间的技术。这使得进程可以像访问内存一样访问文件或设备的内容，而无需进行显式的读写操作。
-
-   > 如需确认 `vm.max_map_count` 的大小：
-   >
-   > ```bash
-   > $ sysctl vm.max_map_count
-   > ```
-   >
-   > 如果 `vm.max_map_count` 的值小于 262144，可以进行重置：
-   >
-   > ```bash
-   > # 这里我们设为 262144:
-   > $ sudo sysctl -w vm.max_map_count=262144
-   > ```
-   >
-   > 你的改动会在下次系统重启时被重置。如果希望做永久改动，还需要在 **/etc/sysctl.conf** 文件里把 `vm.max_map_count` 的值再相应更新一遍：
-   >
-   > ```bash
-   > vm.max_map_count=262144
-   > ```
-
-2. 克隆仓库：
-
-   ```bash
-   $ git clone https://github.com/infiniflow/ragflow.git
-   ```
-
-3. 进入 **docker** 文件夹，利用提前编译好的 Docker 镜像启动服务器：
-
-   > 运行以下命令会自动下载 RAGFlow slim Docker 镜像 `v0.17.2-slim`。请参考下表查看不同 Docker 发行版的描述。如需下载不同于 `v0.17.2-slim` 的 Docker 镜像，请在运行 `docker compose` 启动服务之前先更新 **docker/.env** 文件内的 `RAGFLOW_IMAGE` 变量。比如，你可以通过设置 `RAGFLOW_IMAGE=infiniflow/ragflow:v0.17.2` 来下载 RAGFlow 镜像的 `v0.17.2` 完整发行版。
-
-   ```bash
-   $ cd ragflow/docker
-   # Use CPU for embedding and DeepDoc tasks:
-   $ docker compose -f docker-compose.yml up -d
-
-   # To use GPU to accelerate embedding and DeepDoc tasks:
-   # docker compose -f docker-compose-gpu.yml up -d
-   ```
-
-   | RAGFlow image tag | Image size (GB) | Has embedding models? | Stable?                  |
-   | ----------------- | --------------- | --------------------- | ------------------------ |
-   | v0.17.2           | &approx;9       | :heavy_check_mark:    | Stable release           |
-   | v0.17.2-slim      | &approx;2       | ❌                    | Stable release           |
-   | nightly           | &approx;9       | :heavy_check_mark:    | _Unstable_ nightly build |
-   | nightly-slim      | &approx;2       | ❌                     | _Unstable_ nightly build |
-
-   > [!TIP]
-   > 如果你遇到 Docker 镜像拉不下来的问题，可以在 **docker/.env** 文件内根据变量 `RAGFLOW_IMAGE` 的注释提示选择华为云或者阿里云的相应镜像。
-   >
-   > - 华为云镜像名：`swr.cn-north-4.myhuaweicloud.com/infiniflow/ragflow`
-   > - 阿里云镜像名：`registry.cn-hangzhou.aliyuncs.com/infiniflow/ragflow`
-
-4. 服务器启动成功后再次确认服务器状态：
-
-   ```bash
-   $ docker logs -f ragflow-server
-   ```
-
-   _出现以下界面提示说明服务器启动成功：_
-
-   ```bash
-        ____   ___    ______ ______ __
-       / __ \ /   |  / ____// ____// /____  _      __
-      / /_/ // /| | / / __ / /_   / // __ \| | /| / /
-     / _, _// ___ |/ /_/ // __/  / // /_/ /| |/ |/ /
-    /_/ |_|/_/  |_|\____//_/    /_/ \____/ |__/|__/
-
-    * Running on all addresses (0.0.0.0)
-   ```
-
-   > 如果您在没有看到上面的提示信息出来之前，就尝试登录 RAGFlow，你的浏览器有可能会提示 `network anormal` 或 `网络异常`。
-
-5. 在你的浏览器中输入你的服务器对应的 IP 地址并登录 RAGFlow。
-   > 上面这个例子中，您只需输入 http://IP_OF_YOUR_MACHINE 即可：未改动过配置则无需输入端口（默认的 HTTP 服务端口 80）。
-6. 在 [service_conf.yaml.template](./docker/service_conf.yaml.template) 文件的 `user_default_llm` 栏配置 LLM factory，并在 `API_KEY` 栏填写和你选择的大模型相对应的 API key。
-
-   > 详见 [llm_api_key_setup](https://ragflow.io/docs/dev/llm_api_key_setup)。
-
-   _好戏开始，接着奏乐接着舞！_
-
-## 🔧 系统配置
-
-系统配置涉及以下三份文件：
-
-- [./docker/.env](./docker/.env)：存放一些基本的系统环境变量，比如 `SVR_HTTP_PORT`、`MYSQL_PASSWORD`、`MINIO_PASSWORD` 等。
-- [service_conf.yaml.template](./docker/service_conf.yaml.template)：配置各类后台服务。
-- [docker-compose.yml](./docker/docker-compose.yml): 系统依赖该文件完成启动。
-
-请务必确保 [./docker/.env](./docker/.env) 文件中的变量设置与 [service_conf.yaml.template](./docker/service_conf.yaml.template) 文件中的配置保持一致！
-
-如果不能访问镜像站点 hub.docker.com 或者模型站点 huggingface.co，请按照 [./docker/.env](./docker/.env) 注释修改 `RAGFLOW_IMAGE` 和 `HF_ENDPOINT`。
-
-> [./docker/README](./docker/README.md) 解释了 [service_conf.yaml.template](./docker/service_conf.yaml.template) 用到的环境变量设置和服务配置。
-
-如需更新默认的 HTTP 服务端口(80), 可以在 [docker-compose.yml](./docker/docker-compose.yml) 文件中将配置 `80:80` 改为 `<YOUR_SERVING_PORT>:80`。
-
-> 所有系统配置都需要通过系统重启生效：
->
-> ```bash
-> $ docker compose -f docker-compose.yml up -d
-> ```
-
-## 🔨 以源代码启动服务
+#启动前端服务
+cd /root/ragflow/web
+npm run dev
+```
 
 ### 启动后端
 
@@ -832,6 +948,53 @@ web/
    bash /root/ragflow/docker/launch_backend_service.sh
    ```
 
+   正常启动，出现以下信息表示启动成功：
+
+   ```bash
+           ____   ___    ______ ______ __               
+          / __ \ /   |  / ____// ____// /____  _      __
+         / /_/ // /| | / / __ / /_   / // __ \| | /| / /
+        / _, _// ___ |/ /_/ // __/  / // /_/ /| |/ |/ / 
+       /_/ |_|/_/  |_|\____//_/    /_/ \____/ |__/|__/                             
+   
+       
+   2025-04-11 11:19:01,094 INFO     27812 RAGFlow version: v0.17.2-204-g1979222b full
+   2025-04-11 11:19:01,095 INFO     27812 project base: /root/ragflow
+   2025-04-11 11:19:01,096 INFO     27812 Current configs, from /root/ragflow/conf/service_conf.yaml:
+   	ragflow: {'host': '0.0.0.0', 'http_port': 9380}
+   	mysql: {'name': 'rag_flow', 'user': 'root', 'password': '********', 'host': 'localhost', 'port': 5455, 'max_connections': 100, 'stale_timeout': 30}
+   	minio: {'user': 'rag_flow', 'password': '********', 'host': 'localhost:9000'}
+   	es: {'hosts': 'http://localhost:1200', 'username': 'elastic', 'password': '********'}
+   	infinity: {'uri': 'localhost:23817', 'db_name': 'default_db'}
+   	redis: {'db': 1, 'password': '********', 'host': 'localhost:6379'}
+   2025-04-11 11:19:01,100 INFO     27812 Use Elasticsearch http://localhost:1200 as the doc engine.
+   2025-04-11 11:19:01,126 INFO     27812 GET http://localhost:1200/ [status:200 duration:0.023s]
+   2025-04-11 11:19:01,134 INFO     27812 HEAD http://localhost:1200/ [status:200 duration:0.007s]
+   2025-04-11 11:19:01,136 INFO     27812 Elasticsearch http://localhost:1200 is healthy.
+   2025-04-11 11:19:01,143 WARNING  27812 Load term.freq FAIL!
+   2025-04-11 11:19:01,151 WARNING  27812 Realtime synonym is disabled, since no redis connection.
+   2025-04-11 11:19:01,159 WARNING  27812 Load term.freq FAIL!
+   2025-04-11 11:19:01,165 WARNING  27812 Realtime synonym is disabled, since no redis connection.
+   2025-04-11 11:19:01,167 INFO     27812 MAX_CONTENT_LENGTH: 134217728
+   2025-04-11 11:19:01,168 INFO     27812 MAX_FILE_COUNT_PER_USER: 0
+   2025-04-11 11:19:04,280 INFO     27812 init web data success:2.7721996307373047
+   2025-04-11 11:19:04,284 INFO     27812 update_progress lock_value: 58f01bdd-c3ab-4844-85fa-28bcd3ee09e0
+   2025-04-11 11:19:04,284 INFO     27812 RAGFlow HTTP server start...
+   2025-04-11 11:19:04,288 INFO     27812 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+    * Running on all addresses (0.0.0.0)
+    * Running on http://127.0.0.1:9380
+    * Running on http://192.168.172.128:9380
+   ```
+
+> 其中：
+>
+> - `v0.17.2`：官方发布的版本。
+> - `204`：自官方发布以来的 git 提交次数。
+> - `g1979222b`：`g` 是前缀，`1979222b` 是当前提交 ID 的前七个字符。
+> - `full`/`slim`：RAGFlow 的版本。
+>   - `full`：完整的 RAGFlow 版本。
+>   - `slim`：不包含嵌入模型和 Python 包的 RAGFlow 版本。
+
 ### 启动前端
 
 6. 安装前端依赖：
@@ -849,9 +1012,26 @@ web/
    npm run dev
    ```
    
-   _以下界面说明系统已经成功启动：_
+   以下界面说明系统已经成功启动：
    
-   ![](https://github.com/user-attachments/assets/0daf462c-a24d-4496-a66f-92533534e187)
+   ```bash
+   Done in 1874ms.
+   info  - MFSU eager strategy enabled
+   info  - [MFSU][eager] restored cache
+   [HPM] Proxy created: /api,/v1  -> http://127.0.0.1:9380/
+   event - [MFSU][eager] start build deps
+   info  - [MFSU] skip buildDeps
+           ╔════════════════════════════════════════════════════╗
+           ║ App listening at:                                  ║
+           ║  >   Local: http://localhost:9222                  ║
+   ready - ║  > Network: http://192.168.172.128:9222            ║
+           ║                                                    ║
+           ║ Now you can open browser with the above addresses↑ ║
+           ╚════════════════════════════════════════════════════╝
+   info  - [MFSU][eager] worker init, takes 2243ms
+   ```
+   
+   
 
 ### 组件访问
 
@@ -960,23 +1140,28 @@ web/
 - 访问地址：`redis:6379`
 - 密码：infini_rag_flow
 
-#### 7. RAGFlow API服务
-- HTTP API 地址：`http://192.168.172.128:9380`
+#### 7. HuggingFace
 
-### 注意事项：
-1. 所有服务都配置在同一个 Docker 网络中，服务之间可以通过服务名互相访问
-2. 对外暴露的端口可以通过 localhost 访问
-3. 文件上传大小默认限制为 1GB
-4. 系统默认启用了用户注册功能（REGISTER_ENABLED=1）
-5. 时区设置为 Asia/Shanghai
+- **模型保存地址:**
 
-这些配置都可以在 `docker/.env` 文件中进行修改。如果需要修改任何配置，建议在更改前备份原始配置文件。
+  **Linux:** `~/.cache/huggingface/`
 
-## 部署常见问题
+  **macOS:** `~/Library/Caches/huggingface/`
 
-### 后端服务报错
+  **Windows:** `C:\Users\<YourUsername>\.cache\huggingface\`
 
-#### uv sync 
+- **代理地址：**`HF_ENDPOINT=https://hf-mirror.com`
+
+#### 8. RAGFlow API服务
+
+- API 地址：`http://192.168.172.128:9380`
+- API 文档：`docs/references/http_api_reference_zh.md`
+
+### 以源码启动服务常见问题
+
+#### 后端服务报错
+
+##### uv sync 
 
 ```bash
 uv sync --python 3.10 --all-extras
@@ -1101,7 +1286,7 @@ cd ragflow
 uv sync --python 3.10 --all-extras
 ```
 
-#### launch_backend_service
+##### launch_backend_service
 
 ```bash
 $ bash docker/launch_backend_service.sh
@@ -1164,7 +1349,7 @@ sudo apt-get update
 sudo apt-get install jemalloc
 ```
 
-#### ImportError: libGL.so.1: cannot open shared object file: No such file or directory
+##### ImportError: libGL.so.1: cannot open shared object file: No such file or directory
 
 ```bash
 bash docker/launch_backend_service.sh
@@ -1305,9 +1490,9 @@ ImportError: libodbc.so.2: cannot open shared object file: No such file or direc
 sudo apt-get update && sudo apt-get install -y unixodbc unixodbc-dev
 ```
 
-### 前端服务报错
+#### 前端服务报错
 
-#### 在 `nltk` 库的 `punkt` 分词器无法加载
+##### 在 `nltk` 库的 `punkt` 分词器无法加载
 
 ```bash
 2025-04-01 16:29:30,505 INFO     557636 load_model /root/AI-Box/rag/ragflow/rag/res/deepdoc/rec.onnx uses CPU
@@ -1414,7 +1599,7 @@ import nltk
 nltk.download('punkt')
 ```
 
-#### npm install
+##### npm install
 
 ```bash
 (ragflow) root@fly:~/ragflow/web# apt install npm
@@ -1462,7 +1647,7 @@ nvm install --lts
 nvm use --lts
 ```
 
-#### Uncaught ChunkLoadError
+##### Uncaught ChunkLoadError
 
 ```bash
 mf-dep____vendor.40280d2f.js:218350 Uncaught ChunkLoadError: Loading chunk mf-dep__2128 failed.
@@ -1517,7 +1702,7 @@ npm install
 npm run dev
 ```
 
-#### Error occurred while proxying request 192.168.172.128:9222/v1/system/config to http://127.0.0.1:9380/ [ECONNREFUSED] 
+##### Error occurred while proxying request 192.168.172.128:9222/v1/system/config to http://127.0.0.1:9380/ [ECONNREFUSED] 
 
 ```bash
 npm run dev 
@@ -1563,7 +1748,7 @@ event - [Webpack] Compiled in 617 ms (1464 modules)
 
 ```
 
-## 代码调试
+## 8. 代码调试
 
 https://fancyerii.github.io/2023/09/25/py-remote-debug/
 
@@ -1610,130 +1795,116 @@ npm run dev
 
 ### 后端调试
 
-#### 方案一：VSCode Remote SSH
+我来帮你设置远程调试环境。基于你提供的信息，我们需要配置 VSCode 通过 SSH 连接到远程服务器，并设置 Python 调试器。我会分步骤指导你完成设置：
 
-1. 在 Windows VSCode 中安装 "Remote - SSH" 插件
+1. 首先，让我们确认远程服务器上的 Python 环境：
 
-2. 配置 SSH 连接到 Ubuntu 虚拟机：
 ```bash
-# 在 Windows 的 .ssh/config 中添加：
-Host ubuntu-dev
-    HostName 192.168.172.128
-    User your-username
-    Port 22
+python3 --version && which python3
 ```
+很好，我看到远程服务器使用的是 Python 3.10.12，并且已经配置了虚拟环境。现在我来指导你如何设置远程调试：
 
-3. 在 Ubuntu 虚拟机上安装 Python 调试工具：
-```bash
-pip install debugpy
-```
+#### 1. 在 Windows 上的 VSCode 配置
 
-4. 修改后端启动脚本，添加调试支持。创建 `debug_server.py`：
-```python
-import debugpy
+1. 安装必要的 VSCode 扩展：
+   - Remote - SSH
+   - Python
+   - Python Debug
 
-# 允许调试器连接
-debugpy.listen(("0.0.0.0", 5678))
-print("Waiting for debugger attach...")
-debugpy.wait_for_client()
+2. 配置 SSH 连接：
+   - 按 `Ctrl+Shift+P`
+   - 输入 `Remote-SSH: Connect to Host`
+   - 添加新的 SSH 主机：`root@192.168.172.128`
+   - 选择 SSH 配置文件位置（通常在 `C:\Users\YourUsername\.ssh\config`）
+   - 输入密码 `fly123`
 
-# 导入原有的服务启动代码
-from api.ragflow_server import app
+#### 2. 配置调试设置
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=9380)
-```
+让我们在`/root/ragflow/.vscode/launch.json`创建调试配置文件：
 
-5. 在 VSCode 中配置调试设置（.vscode/launch.json）：
-```json
+```json with comments:.vscode/launch.json
 {
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Remote Attach",
+            "name": "Backend",
             "type": "python",
-            "request": "attach",
-            "connect": {
-                "host": "192.168.172.128",
-                "port": 5678
-            },
-            "pathMappings": [
-                {
-                    "localRoot": "${workspaceFolder}",
-                    "remoteRoot": "/root/ragflow"  // Ubuntu 上的代码路径
-                }
-            ]
+            "request": "launch",
+            "program": "${workspaceFolder}/api/ragflow_server.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
         }
     ]
-}
+} 
 ```
+#### 3. 安装调试所需的包
 
-#### 方案二：PyCharm Professional 远程调试
+让我们确保远程环境安装了调试所需的包：
 
-1. 在 PyCharm Professional 中配置远程解释器：
-   - 转到 File > Settings > Project > Python Interpreter
-   - 添加新的 SSH Interpreter，连接到 Ubuntu 虚拟机
-
-2. 配置远程部署：
-   - 转到 Tools > Deployment > Configuration
-   - 添加 SFTP 配置，映射本地和远程路径
-
-3. 配置远程调试配置：
-   - 创建新的 Python Debug Server 配置
-   - 设置主机为 192.168.172.128
-   - 设置端口为 5678
-
-#### 调试工作流
-
-1. 启动基础服务：
 ```bash
-# 在 Ubuntu 虚拟机上
-docker compose -f docker/docker-compose-base.yml up -d
+pip install debugpy
 ```
+#### 4. 使用方法
 
-2. 启动后端服务（调试模式）：
-```bash
-# 在 Ubuntu 虚拟机上
-source .venv/bin/activate
-python debug_server.py
-```
+现在你可以按照以下步骤进行远程调试：
 
-3. 启动前端服务：
-```bash
-# 在 Windows 本机
-npm run dev
-```
+1. 在 VSCode 中连接到远程服务器：
+   - 点击左下角的绿色图标
+   - 选择 "Connect to Host..."
+   - 选择 `root@192.168.172.128`
 
-4. 开始调试：
-   - 前端：使用 Chrome DevTools
-   - 后端：使用 VSCode 或 PyCharm 的调试器
+2. 打开项目文件夹：
+   - 在 VSCode 中，选择 "File > Open Folder"
+   - 输入 `/root/ragflow`
 
-### 注意事项
+3. 设置断点：
+   - 打开你想调试的 Python 文件
+   - 点击行号左侧设置断点
 
-1. 确保 Windows 和 Ubuntu 虚拟机之间的网络连接正常
+4. 启动调试：
+   - 按 `F5` 或点击 "Run and Debug" 图标
+   - 选择相应的调试配置：
+     - "Python: RAGFlow Backend" 用于调试主服务器
+     - "Python: Task Executor" 用于调试任务执行器
 
-2. 检查防火墙设置，确保调试端口（5678）和服务端口（9380）开放
+5. 调试控制：
+   - F5: 继续执行
+   - F10: 单步执行（不进入函数）
+   - F11: 单步执行（进入函数）
+   - Shift+F5: 停止调试
+   - F9: 切换断点
+   
+   ![后端调试](https://cdn.jsdelivr.net/gh/Fly0905/note-picture@main/imag/202504112032967.png)
 
-3. 如果遇到 CORS 问题，需要在后端添加相应的 CORS 配置
+#### 注意事项：
 
-4. 建议使用版本控制（如 Git）来同步 Windows 和 Ubuntu 之间的代码
+1. 调试时会暂停原有的服务，建议在开发环境进行调试。
 
-这样的配置允许你在 Windows 本机进行代码编写和调试，同时可以远程调试部署在 Ubuntu 虚拟机上的服务。需要注意的是，某些调试功能（如 PyCharm 的远程调试）可能需要专业版本的支持。
+2. 如果需要同时调试多个任务执行器，可以复制 "Python: Task Executor" 配置，修改 `args` 中的任务 ID。
 
-## 
+3. 调试时可以在 DEBUG CONSOLE 中查看变量值，也可以在 WATCH 窗口添加要监视的变量。
 
-## 📚 技术文档
+4. 如果遇到连接问题，可以检查：
+   - 防火墙设置
+   - SSH 连接是否正常
+   - debugpy 是否正确安装
 
-- [Quickstart](https://ragflow.io/docs/dev/)
-- [Configuration](https://ragflow.io/docs/dev/configurations)
-- [Release notes](https://ragflow.io/docs/dev/release_notes)
-- [User guides](https://ragflow.io/docs/dev/category/guides)
-- [Developer guides](https://ragflow.io/docs/dev/category/developers)
-- [References](https://ragflow.io/docs/dev/category/references)
-- [FAQs](https://ragflow.io/docs/dev/faq)
+## 9.技术文档
 
-## 参考
+1. [Quickstart](https://ragflow.io/docs/dev/)
+2. [Configuration](https://ragflow.io/docs/dev/configurations)
+3. [Release notes](https://ragflow.io/docs/dev/release_notes)
+4. [User guides](https://ragflow.io/docs/dev/category/guides)
+5. [Developer guides](https://ragflow.io/docs/dev/category/developers)
+6. [References](https://ragflow.io/docs/dev/category/references)
+7. [FAQs](https://ragflow.io/docs/dev/faq)
+
+## 10.参考
 
 1. 千问模型：https://bailian.console.aliyun.com/?apiKey=1#/api-key
 1. MCP: https://github.com/zalan159/ragflow-mcpclient
 1. 团队管理和用户配置：https://github.com/zstar1003/ragflow-plus
+1. Redis可视化客户端：https://github.com/qishibo/AnotherRedisDesktopManager/releases
